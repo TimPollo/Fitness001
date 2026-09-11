@@ -1,83 +1,125 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#06111f">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="FitPlan">
-  <title>FitPlan</title>
-  <style>
-    :root{
-      --bg:#06111f;--panel:#0b1a2b;--panel2:#0f2237;--line:#1b3855;
-      --text:#f4f8ff;--muted:#8ea6bf;--accent:#59d0ff;--accent2:#76f0c5;
-      --danger:#ff8896;--shadow:0 18px 50px rgba(0,0,0,.22)
-    }
-    *{box-sizing:border-box} html{background:var(--bg);color-scheme:dark}
-    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;padding:env(safe-area-inset-top) 0 calc(84px + env(safe-area-inset-bottom))}
-    button,input{font:inherit} button{cursor:pointer}
-    .app{width:min(920px,100%);margin:0 auto;padding:20px 14px 30px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-    .brand{font-size:24px;font-weight:900;letter-spacing:-.6px}
-    .status{font-size:12px;color:var(--muted)} .status.ok{color:var(--accent2)}
-    .eyebrow{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
-    h1{font-size:34px;line-height:1;margin:6px 0 16px;letter-spacing:-1.2px}
-    h2{font-size:21px;margin:0 0 12px;letter-spacing:-.4px}
-    h3{font-size:16px;margin:0 0 4px}.muted{color:var(--muted)}.tiny{font-size:12px}
-    .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:var(--shadow)}
-    .card.flat{box-shadow:none}
-    .today{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:end}
-    .today-title{font-size:30px;font-weight:900;letter-spacing:-.8px}
-    .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:7px 10px;font-size:12px;color:var(--muted)}
-    .pill.good{color:var(--accent2)} .pill.blue{color:var(--accent)}
-    .btn{border:0;border-radius:13px;padding:12px 14px;font-weight:850;background:var(--accent);color:#001b2d}
-    .btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
-    .btn.danger{background:#2d151c;color:#ffb2bd;border:1px solid #5a2b36}.btn.full{width:100%}
-    .macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-    .macro{border:1px solid var(--line);background:var(--panel2);border-radius:15px;padding:12px}
-    .macro strong{display:block;font-size:21px}.macro span{font-size:11px;color:var(--muted)}
-    .day{display:grid;grid-template-columns:86px 1fr auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
-    .day:last-child{border-bottom:0}.day.current{color:var(--accent2);font-weight:800}
-    .segmented{display:flex;gap:8px;overflow:auto;padding-bottom:4px;scrollbar-width:none}
-    .segmented::-webkit-scrollbar{display:none}
-    .segmented button{white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:9px 12px;border-radius:999px;font-weight:800}
-    .segmented button.active{background:var(--text);border-color:var(--text);color:#06111f}
-    .workout-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-    .exercise{padding:16px 0;border-top:1px solid var(--line)}.exercise:first-child{border-top:0;padding-top:2px}
-    .exercise-title{font-size:16px;font-weight:900}.cue{font-size:12px;color:var(--accent);margin-top:4px;line-height:1.35}
-    .set{margin-top:10px;border:1px solid var(--line);background:#081522;border-radius:15px;padding:12px}
-    .set-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}.set-name{font-size:13px;font-weight:900}
-    .last{font-size:12px;color:var(--muted);margin-bottom:8px}.inputs{display:grid;grid-template-columns:1.4fr .8fr;gap:8px}
-    label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}
-    input{width:100%;background:#06111f;border:1px solid var(--line);color:var(--text);border-radius:11px;padding:11px 12px;outline:none;font-size:16px}
-    input:focus{border-color:var(--accent)}
-    .compare{font-size:11px;padding:5px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
-    .compare.up{color:var(--accent2);border-color:#2b6a59;background:#0a251f}.compare.down{color:#ff9baa;border-color:#66303a;background:#28131a}
-    .savebar{position:sticky;bottom:80px;z-index:10;margin-top:16px;padding:10px;background:rgba(6,17,31,.92);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:16px}
-    .autosave-note{font-size:11px;color:var(--muted);text-align:center;margin-top:8px}
-    .recipe{padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--panel2);margin-top:10px}
-    .recipe-top{display:flex;justify-content:space-between;gap:10px}
-    .history-item{padding:12px 0;border-bottom:1px solid var(--line)}.history-item:last-child{border-bottom:0}
-    .empty{padding:20px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);text-align:center}
-    .view{display:none}.view.active{display:block}
-    nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(920px,100%);display:grid;grid-template-columns:repeat(4,1fr);background:rgba(6,17,31,.96);backdrop-filter:blur(18px);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));z-index:30}
-    .tab{border:0;background:transparent;color:var(--muted);padding:8px 5px;border-radius:12px;font-size:11px;font-weight:800}
-    .tab.active{color:var(--text);background:var(--panel2)}.tab b{display:block;font-size:18px;margin-bottom:2px}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    @media(max-width:620px){.macro-grid{grid-template-columns:1fr 1fr}.day{grid-template-columns:72px 1fr}.day>span:last-child{grid-column:2}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06111f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FitPlan">
+<title>FitPlan</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#06111f;--panel:#0a1a2b;--panel2:#0e2238;--panel3:#112941;
+  --line:#1b3855;--text:#f4f8ff;--muted:#8fa7c0;--blue:#58d1ff;
+  --green:#73efc2;--red:#ff8b99;--shadow:0 16px 44px rgba(0,0,0,.22)
+}
+*{box-sizing:border-box}
+html{background:var(--bg);color-scheme:dark}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding:env(safe-area-inset-top) 0 calc(88px + env(safe-area-inset-bottom))
+}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{width:min(920px,100%);margin:auto;padding:18px 14px 30px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.brand{font-size:25px;font-weight:900;letter-spacing:-.7px}
+.sync{font-size:11px;color:var(--muted);text-align:right}
+.sync.ok{color:var(--green)} .sync.err{color:var(--red)}
+.eyebrow{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+h1{font-size:34px;line-height:1;margin:6px 0 16px;letter-spacing:-1.1px}
+h2{font-size:21px;margin:0 0 12px;letter-spacing:-.35px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:var(--shadow)}
+.flat{box-shadow:none}
+.muted{color:var(--muted)} .tiny{font-size:12px}
+.pill{display:inline-flex;align-items:center;border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:7px 10px;font-size:12px;color:var(--muted)}
+.pill.green{color:var(--green)} .pill.blue{color:var(--blue)}
+.btn{border:0;border-radius:13px;padding:12px 14px;background:var(--blue);color:#001b2c;font-weight:900}
+.btn.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+.btn.danger{background:#2a151b;color:#ffb2bd;border:1px solid #5a2b36}
+.btn.full{width:100%}
+.today{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}
+.today-title{font-size:29px;font-weight:900;letter-spacing:-.8px}
+.macro-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.macro{border:1px solid var(--line);background:var(--panel2);border-radius:14px;padding:12px}
+.macro strong{display:block;font-size:20px}.macro span{font-size:11px;color:var(--muted)}
+.day{display:grid;grid-template-columns:86px 1fr auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.day:last-child{border-bottom:0}.day.current{color:var(--green);font-weight:800}
+.segmented{display:flex;gap:8px;overflow:auto;padding-bottom:4px;scrollbar-width:none}
+.segmented::-webkit-scrollbar{display:none}
+.segmented button{white-space:nowrap;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:9px 12px;border-radius:999px;font-weight:800}
+.segmented button.active{background:var(--text);color:#06111f;border-color:var(--text)}
+.workout-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.exercise{padding:16px 0;border-top:1px solid var(--line)}
+.exercise:first-child{border-top:0;padding-top:2px}
+.exercise-title{font-size:16px;font-weight:900}
+.cue{font-size:12px;color:var(--blue);margin-top:4px;line-height:1.35}
+.set{margin-top:10px;border:1px solid var(--line);background:#081522;border-radius:15px;padding:12px}
+.set-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.set-name{font-size:13px;font-weight:900}
+.last{font-size:12px;color:var(--muted);margin-bottom:8px}
+.inputs{display:grid;grid-template-columns:1.35fr .8fr;gap:8px}
+label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}
+input{width:100%;background:#06111f;border:1px solid var(--line);color:var(--text);border-radius:11px;padding:11px 12px;outline:none;font-size:16px}
+input:focus{border-color:var(--blue)}
+.compare{font-size:11px;padding:5px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.compare.up{color:var(--green);border-color:#2b6a59;background:#0a251f}
+.compare.down{color:#ff9baa;border-color:#66303a;background:#28131a}
+.savebar{position:sticky;bottom:80px;z-index:10;margin-top:16px;padding:10px;background:rgba(6,17,31,.93);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:16px}
+.save-note{text-align:center;font-size:11px;color:var(--muted);margin-top:7px}
+.history-item{padding:12px 0;border-bottom:1px solid var(--line)}
+.history-item:last-child{border-bottom:0}
+.empty{padding:20px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);text-align:center}
+.account{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;margin-bottom:12px}
+.view{display:none}.view.active{display:block}
+nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(920px,100%);display:grid;grid-template-columns:repeat(4,1fr);background:rgba(6,17,31,.96);backdrop-filter:blur(18px);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom));z-index:30}
+.tab{border:0;background:transparent;color:var(--muted);padding:8px 5px;border-radius:12px;font-size:11px;font-weight:800}
+.tab.active{color:var(--text);background:var(--panel2)}.tab b{display:block;font-size:18px;margin-bottom:2px}
+.login{
+  position:fixed;inset:0;background:radial-gradient(circle at top,#0f2c46,#06111f 55%);
+  z-index:100;display:flex;align-items:center;justify-content:center;padding:24px
+}
+.login.hidden{display:none}
+.login-card{width:min(430px,100%);border:1px solid var(--line);background:rgba(10,26,43,.94);border-radius:24px;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.login-logo{font-size:34px;font-weight:950;letter-spacing:-1px;margin-bottom:6px}
+.login p{color:var(--muted);line-height:1.5}
+.login-error{color:var(--red);font-size:12px;margin-top:12px;min-height:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.recipe{padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--panel2);margin-top:10px}
+@media(max-width:620px){.macro-grid{grid-template-columns:1fr 1fr}.day{grid-template-columns:72px 1fr}.day>span:last-child{grid-column:2}}
+</style>
 </head>
 <body>
+
+<div id="loginScreen" class="login">
+  <div class="login-card">
+    <div class="login-logo">FitPlan</div>
+    <div class="eyebrow">Cloud Sync</div>
+    <p>Melde dich mit deinem GitHub-Account an. Danach werden deine Trainingsdaten über Supabase zwischen iPhone, iPad und Mac synchronisiert.</p>
+    <button id="loginBtn" class="btn full">Mit GitHub anmelden</button>
+    <div id="loginError" class="login-error"></div>
+  </div>
+</div>
+
 <main class="app">
   <div class="topbar">
     <div class="brand">FitPlan</div>
-    <div id="globalSaveStatus" class="status">bereit</div>
+    <div id="syncStatus" class="sync">Verbinde…</div>
   </div>
 
   <section id="home" class="view active">
+    <div id="accountBox" class="account">
+      <div><div class="tiny muted">Angemeldet als</div><b id="accountName">–</b></div>
+      <button id="logoutBtn" class="btn secondary">Abmelden</button>
+    </div>
+
     <div class="eyebrow" id="dateLabel"></div>
     <h1>Heute</h1>
+
     <div class="card">
       <div class="today">
         <div>
@@ -98,20 +140,16 @@
         <div class="macro"><strong>390 g</strong><span>Kohlenhydrate</span></div>
         <div class="macro"><strong>83 g</strong><span>Fett</span></div>
       </div>
-      <p class="tiny muted" style="margin-bottom:0">Tagestracking bleibt in Cal AI. Hier dienen die Werte nur als Orientierung.</p>
+      <p class="tiny muted" style="margin-bottom:0">Tagestracking bleibt in Cal AI. FitPlan ist für Plan, Rezepte und Trainingsprogression.</p>
     </div>
 
-    <div class="card flat">
-      <h2>Woche</h2>
-      <div id="weekList"></div>
-    </div>
+    <div class="card flat"><h2>Woche</h2><div id="weekList"></div></div>
   </section>
 
   <section id="training" class="view">
-    <div class="eyebrow">Autogespeichert auf diesem Gerät</div>
+    <div class="eyebrow">Cloud-synchronisiert</div>
     <h1>Training</h1>
     <div class="segmented" id="workoutTabs"></div>
-
     <div class="card">
       <div class="workout-head">
         <div><div class="eyebrow" id="workoutCode"></div><h2 id="workoutTitle"></h2></div>
@@ -120,8 +158,8 @@
       <div id="workoutExtra"></div>
       <div id="exerciseList"></div>
       <div class="savebar">
-        <button id="finishWorkoutBtn" class="btn full">Training abschließen & als Verlauf speichern</button>
-        <div class="autosave-note">Jede Eingabe wird bereits beim Tippen automatisch gespeichert. „Abschließen“ macht daraus einen festen Verlaufseintrag.</div>
+        <button id="finishWorkoutBtn" class="btn full">Training abschließen</button>
+        <div class="save-note">Jede Änderung wird automatisch lokal gesichert und kurz danach in die Cloud synchronisiert.</div>
       </div>
     </div>
   </section>
@@ -130,23 +168,20 @@
     <div class="eyebrow">Rezeptbibliothek</div>
     <h1>Rezepte</h1>
     <div class="card flat">
-      <p class="muted" style="margin-top:0">Diesen Bereich können wir als Nächstes mit deinen echten Rezepten füllen. Die Tagesmakros werden weiterhin in Cal AI getrackt.</p>
-      <div class="recipe"><div class="recipe-top"><div><h3>High-Protein Pasta</h3><div class="tiny muted">Beispiel</div></div><b>ca. 900 kcal</b></div></div>
-      <div class="recipe"><div class="recipe-top"><div><h3>Skyr-Oat Bowl</h3><div class="tiny muted">Beispiel</div></div><b>ca. 650 kcal</b></div></div>
+      <p class="muted" style="margin-top:0">Hier bauen wir als Nächstes deine echten Rezepte mit Kalorien, Protein, Kohlenhydraten, Fett und Salz ein.</p>
+      <div class="recipe"><b>High-Protein Pasta</b><div class="tiny muted">Beispielrezept</div></div>
+      <div class="recipe"><b>Skyr-Oat Bowl</b><div class="tiny muted">Beispielrezept</div></div>
     </div>
   </section>
 
   <section id="progress" class="view">
-    <div class="eyebrow">Trainingsverlauf</div>
+    <div class="eyebrow">Cloud-Verlauf</div>
     <h1>Fortschritt</h1>
-    <div class="card flat"><h2>Gespeicherte Einheiten</h2><div id="historyList"></div></div>
+    <div class="card flat"><h2>Abgeschlossene Einheiten</h2><div id="historyList"></div></div>
     <div class="card flat">
-      <h2>Datensicherung</h2>
-      <p class="tiny muted">Die aktuelle Version speichert lokal auf diesem Gerät. Exportiere gelegentlich ein Backup. Für echte Synchronisation zwischen iPhone, iPad und Mac bauen wir später eine Cloud-Datenbank ein.</p>
-      <div class="grid2">
-        <button class="btn secondary" onclick="exportData()">Backup exportieren</button>
-        <button class="btn danger" onclick="clearAll()">Lokale Daten löschen</button>
-      </div>
+      <h2>Synchronisation</h2>
+      <p class="tiny muted">Cloud-Daten sind geräteübergreifend. Zusätzlich hält FitPlan einen lokalen Puffer bereit, falls die Verbindung beim Training kurz weg ist.</p>
+      <button id="forceSyncBtn" class="btn secondary full">Jetzt neu synchronisieren</button>
     </div>
   </section>
 </main>
@@ -159,6 +194,12 @@
 </nav>
 
 <script>
+const SUPABASE_URL = "https://korenyaxchoojrsenypc.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_mAzRO8wGgj9hh3ZW3TdNCw_gHiEH088";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+});
+
 const WEEK=[
   {day:"Montag",type:"rest",title:"Rest Day",sub:"Regeneration"},
   {day:"Dienstag",type:"workout",code:"T1",title:"Oberkörper",sub:"Krafttraining"},
@@ -219,38 +260,105 @@ const WORKOUTS={
 };
 
 const DAYS=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
-let selectedWorkout="T1";
+let user=null, selectedWorkout="T1", renderToken=0;
+const saveTimers=new Map();
 
 function dateKey(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")}
-function fmtDate(s){const d=s?new Date(s+"T12:00:00"):new Date();return d.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"})}
-function setStatus(text,ok=true){const el=document.getElementById("globalSaveStatus");el.textContent=text;el.className="status"+(ok?" ok":"")}
-function safeParse(key,fallback){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))}catch(e){return fallback}}
-function getSessions(){const v3=localStorage.getItem("fitplan_sessions_v3");if(v3)return safeParse("fitplan_sessions_v3",[]);const old=safeParse("fitplan_sessions_v2",[]);if(old.length){localStorage.setItem("fitplan_sessions_v3",JSON.stringify(old));return old}return []}
-function saveSessions(v){localStorage.setItem("fitplan_sessions_v3",JSON.stringify(v))}
-function draftKey(code){return `fitplan_draft_v3_${dateKey()}_${code}`}
-function getDraft(code){return safeParse(draftKey(code),{})}
-function saveDraft(code,draft){localStorage.setItem(draftKey(code),JSON.stringify(draft));setStatus("automatisch gespeichert");clearTimeout(window.__saveTimer);window.__saveTimer=setTimeout(()=>setStatus("gespeichert"),1000)}
-function latestCompleted(code){return getSessions().filter(x=>x.workout===code).sort((a,b)=>(b.savedAt||"").localeCompare(a.savedAt||""))[0]||null}
-function previousSet(code,ei,si){const completed=latestCompleted(code);const h=completed?.entries?.[ei]?.sets?.[si];if(h)return {...h,source:fmtDate(completed.date)};const seed=WORKOUTS[code].exercises[ei].sets[si];return {weight:seed[0],reps:seed[1],source:"Ausgangswert"}}
+function fmtDate(s){const d=new Date(s+"T12:00:00");return d.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"})}
+function syncStatus(text,kind=""){const el=document.getElementById("syncStatus");el.textContent=text;el.className="sync "+kind}
+function cacheKey(code){return `fitplan_cloudcache_${user?.id||"anon"}_${dateKey()}_${code}`}
+function readCache(code){try{return JSON.parse(localStorage.getItem(cacheKey(code))||"{}")}catch{return {}}}
+function writeCache(code,obj){localStorage.setItem(cacheKey(code),JSON.stringify(obj))}
 function currentSchedule(){return WEEK.find(x=>x.day===DAYS[new Date().getDay()])}
 
-function renderHome(){
-  const now=new Date();
-  document.getElementById("dateLabel").textContent=now.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
-  const s=currentSchedule();
-  document.getElementById("todayTitle").textContent=s.title;document.getElementById("todaySub").textContent=s.sub;
-  const btn=document.getElementById("todayOpenBtn"),extra=document.getElementById("todayExtra");extra.innerHTML="";
-  if(s.type==="workout"){btn.style.display="";btn.onclick=()=>{selectedWorkout=s.code;switchView("training");renderTraining()};if(s.day==="Sonntag")extra.innerHTML='<span class="pill good">20 Min Cardio danach</span>'}
-  else{btn.style.display="none";extra.innerHTML=s.type==="cardio"?'<span class="pill good">70 Min Cardio</span>':'<span class="pill">Regeneration</span>'}
-  document.getElementById("weekList").innerHTML=WEEK.map(x=>`<div class="day ${x.day===DAYS[now.getDay()]?"current":""}"><span>${x.day}</span><span><b>${x.title}</b><br><span class="tiny muted">${x.sub}</span></span><span class="pill">${x.type==="workout"?x.code:(x.type==="cardio"?"Cardio":"Rest")}</span></div>`).join("");
+async function signIn(){
+  document.getElementById("loginError").textContent="";
+  const redirectTo = window.location.origin + window.location.pathname;
+  const {error}=await sb.auth.signInWithOAuth({provider:"github",options:{redirectTo}});
+  if(error) document.getElementById("loginError").textContent=error.message;
 }
-function switchView(id){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===id));if(id==="training")renderTraining();if(id==="progress")renderHistory();window.scrollTo({top:0,behavior:"smooth"})}
+async function signOut(){await sb.auth.signOut();user=null;document.getElementById("loginScreen").classList.remove("hidden")}
+document.getElementById("loginBtn").onclick=signIn;
+document.getElementById("logoutBtn").onclick=signOut;
+
+async function boot(){
+  const {data:{session},error}=await sb.auth.getSession();
+  if(error) syncStatus("Login-Fehler","err");
+  user=session?.user||null;
+  if(!user){
+    document.getElementById("loginScreen").classList.remove("hidden");
+    return;
+  }
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("accountName").textContent=user.user_metadata?.user_name || user.email || "GitHub";
+  syncStatus("Cloud verbunden","ok");
+  renderHome();
+  await renderTraining();
+  await renderHistory();
+  await retryPendingCache();
+}
+sb.auth.onAuthStateChange((_event,session)=>{
+  user=session?.user||null;
+  if(user){
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("accountName").textContent=user.user_metadata?.user_name || user.email || "GitHub";
+  }else document.getElementById("loginScreen").classList.remove("hidden");
+});
+
+function renderHome(){
+  const now=new Date(),s=currentSchedule();
+  document.getElementById("dateLabel").textContent=now.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+  document.getElementById("todayTitle").textContent=s.title;
+  document.getElementById("todaySub").textContent=s.sub;
+  const btn=document.getElementById("todayOpenBtn"),extra=document.getElementById("todayExtra");extra.innerHTML="";
+  if(s.type==="workout"){
+    btn.style.display="";
+    btn.onclick=()=>{selectedWorkout=s.code;switchView("training")};
+    if(s.day==="Sonntag")extra.innerHTML='<span class="pill green">20 Min Cardio danach</span>';
+  } else {
+    btn.style.display="none";
+    extra.innerHTML=s.type==="cardio"?'<span class="pill green">70 Min Cardio</span>':'<span class="pill">Regeneration</span>';
+  }
+  document.getElementById("weekList").innerHTML=WEEK.map(x=>`<div class="day ${x.day===DAYS[now.getDay()]?"current":""}">
+    <span>${x.day}</span><span><b>${x.title}</b><br><span class="tiny muted">${x.sub}</span></span>
+    <span class="pill">${x.type==="workout"?x.code:(x.type==="cardio"?"Cardio":"Rest")}</span></div>`).join("");
+}
+async function switchView(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
+  if(id==="training")await renderTraining();
+  if(id==="progress")await renderHistory();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchView(b.dataset.view));
 
 function renderWorkoutTabs(){
   const root=document.getElementById("workoutTabs");
   root.innerHTML=Object.entries(WORKOUTS).map(([code,w])=>`<button class="${code===selectedWorkout?"active":""}" data-code="${code}">${code} · ${w.name}</button>`).join("");
-  root.querySelectorAll("button").forEach(b=>b.onclick=()=>{selectedWorkout=b.dataset.code;renderTraining()});
+  root.querySelectorAll("button").forEach(b=>b.onclick=async()=>{selectedWorkout=b.dataset.code;await renderTraining()});
+}
+
+async function loadTodayRows(code){
+  const {data,error}=await sb.from("training_entries")
+    .select("exercise_index,set_number,weight,reps,completed,updated_at")
+    .eq("session_date",dateKey()).eq("workout_code",code);
+  if(error) throw error;
+  const map={};(data||[]).forEach(r=>map[`${r.exercise_index}:${r.set_number}`]=r);return map;
+}
+async function loadPreviousRows(code){
+  const {data,error}=await sb.from("training_entries")
+    .select("session_date,exercise_index,set_number,weight,reps")
+    .eq("workout_code",code).eq("completed",true).lt("session_date",dateKey())
+    .order("session_date",{ascending:false}).limit(100);
+  if(error) throw error;
+  if(!data?.length)return {};
+  const latest=data[0].session_date, map={};
+  data.filter(r=>r.session_date===latest).forEach(r=>map[`${r.exercise_index}:${r.set_number}`]={...r,source:fmtDate(latest)});
+  return map;
+}
+function seedPrevious(code,ei,si){
+  const seed=WORKOUTS[code].exercises[ei].sets[si];
+  return {weight:seed[0],reps:seed[1],source:"Ausgangswert"};
 }
 function parseReps(v){const m=String(v||"").match(/(\d+(?:[.,]\d+)?)/);return m?Number(m[1].replace(",",".")):null}
 function parseLoad(v){
@@ -265,67 +373,161 @@ function compare(prevW,prevR,newW,newR){
   const a=parseLoad(prevW),b=parseLoad(newW),pr=parseReps(prevR),nr=parseReps(newR);
   if(a&&b&&a.type===b.type){
     const load=b.a!==a.a?Math.sign(b.a-a.a):Math.sign(b.b-a.b);
-    if(load>0)return {cls:"up",text:"mehr Gewicht"};if(load<0)return {cls:"down",text:"weniger Gewicht"};
-    if(pr!=null&&nr!=null){if(nr>pr)return {cls:"up",text:"mehr Wdh."};if(nr<pr)return {cls:"down",text:"weniger Wdh."};return {cls:"",text:"gleich"}}
+    if(load>0)return {cls:"up",text:"mehr Gewicht"};
+    if(load<0)return {cls:"down",text:"weniger Gewicht"};
+    if(pr!=null&&nr!=null){
+      if(nr>pr)return {cls:"up",text:"mehr Wdh."};
+      if(nr<pr)return {cls:"down",text:"weniger Wdh."};
+      return {cls:"",text:"gleich"};
+    }
   }
   return {cls:"",text:"gespeichert"};
 }
-function renderTraining(){
+
+async function renderTraining(){
+  if(!user)return;
+  const token=++renderToken, code=selectedWorkout,w=WORKOUTS[code];
   renderWorkoutTabs();
-  const w=WORKOUTS[selectedWorkout],draft=getDraft(selectedWorkout);
-  document.getElementById("workoutCode").textContent=selectedWorkout;document.getElementById("workoutTitle").textContent=w.name;document.getElementById("workoutDay").textContent=w.day;
-  document.getElementById("workoutExtra").innerHTML=w.extra?`<div class="pill good" style="margin-bottom:10px">${w.extra}</div>`:"";
+  document.getElementById("workoutCode").textContent=code;
+  document.getElementById("workoutTitle").textContent=w.name;
+  document.getElementById("workoutDay").textContent=w.day;
+  document.getElementById("workoutExtra").innerHTML=w.extra?`<span class="pill green" style="margin-bottom:10px">${w.extra}</span>`:"";
+  syncStatus("Synchronisiere…");
+
+  let today={},previous={};
+  try{
+    [today,previous]=await Promise.all([loadTodayRows(code),loadPreviousRows(code)]);
+    syncStatus("Cloud aktuell","ok");
+  }catch(e){
+    syncStatus("Cloud nicht erreichbar – lokaler Puffer aktiv","err");
+  }
+  if(token!==renderToken)return;
+  const cache=readCache(code);
+
   document.getElementById("exerciseList").innerHTML=w.exercises.map((ex,ei)=>`
     <div class="exercise">
       <div class="exercise-title">${ei+1}. ${ex.name}</div><div class="cue">${ex.cue}</div>
-      ${ex.sets.map((_,si)=>{const prev=previousSet(selectedWorkout,ei,si),saved=draft?.[ei]?.[si]||{},cmp=compare(prev.weight,prev.reps,saved.weight,saved.reps);return `
-        <div class="set" data-e="${ei}" data-s="${si}">
+      ${ex.sets.map((_,si)=>{
+        const key=`${ei}:${si+1}`;
+        const prev=previous[key]||seedPrevious(code,ei,si);
+        const cloud=today[key];
+        const local=cache[key];
+        const current=(local?.pending?local:(cloud||local||null));
+        const valueW=current?.weight ?? prev.weight ?? "";
+        const valueR=current?.reps ?? prev.reps ?? "";
+        const cmp=compare(prev.weight,prev.reps,valueW,valueR);
+        return `<div class="set" data-e="${ei}" data-s="${si+1}">
           <div class="set-head"><span class="set-name">Satz ${si+1}</span><span class="compare ${cmp.cls}">${cmp.text}</span></div>
-          <div class="last">Letzter Wert (${prev.source}): <b>${prev.weight||"–"} × ${prev.reps||"–"}</b></div>
+          <div class="last">Letztes Training (${prev.source}): <b>${prev.weight||"–"} × ${prev.reps||"–"}</b></div>
           <div class="inputs">
-            <div><label>Gewicht / Stack</label><input class="weight" type="text" value="${saved.weight??""}" placeholder="${prev.weight||"z. B. 70kg"}"></div>
-            <div><label>Wiederholungen</label><input class="reps" type="text" value="${saved.reps??""}" placeholder="${prev.reps||"z. B. 10"}"></div>
+            <div><label>Gewicht / Stack</label><input class="weight" type="text" value="${escapeAttr(valueW)}"></div>
+            <div><label>Wiederholungen</label><input class="reps" type="text" value="${escapeAttr(valueR)}"></div>
           </div>
-        </div>`}).join("")}
+        </div>`;
+      }).join("")}
     </div>`).join("");
 
   document.querySelectorAll(".set").forEach(el=>{
-    const ei=Number(el.dataset.e),si=Number(el.dataset.s);
-    const onChange=()=>{
-      const d=getDraft(selectedWorkout);if(!d[ei])d[ei]={};
-      d[ei][si]={weight:el.querySelector(".weight").value.trim(),reps:el.querySelector(".reps").value.trim()};
-      saveDraft(selectedWorkout,d);
-      const prev=previousSet(selectedWorkout,ei,si),c=compare(prev.weight,prev.reps,d[ei][si].weight,d[ei][si].reps),badge=el.querySelector(".compare");
-      badge.className="compare "+c.cls;badge.textContent=c.text;
+    const ei=Number(el.dataset.e),sn=Number(el.dataset.s);
+    const prev=previous[`${ei}:${sn}`]||seedPrevious(code,ei,sn-1);
+    const save=()=>{
+      const weight=el.querySelector(".weight").value.trim(),reps=el.querySelector(".reps").value.trim();
+      const c=readCache(code);c[`${ei}:${sn}`]={weight,reps,pending:true,updatedAt:new Date().toISOString()};writeCache(code,c);
+      const cmp=compare(prev.weight,prev.reps,weight,reps),badge=el.querySelector(".compare");
+      badge.className="compare "+cmp.cls;badge.textContent=cmp.text;
+      queueCloudSave(code,ei,sn,weight,reps);
     };
-    el.querySelector(".weight").addEventListener("input",onChange);el.querySelector(".reps").addEventListener("input",onChange);
+    el.querySelector(".weight").addEventListener("input",save);
+    el.querySelector(".reps").addEventListener("input",save);
+    el.querySelector(".weight").addEventListener("blur",()=>flushCloudSave(code,ei,sn,el));
+    el.querySelector(".reps").addEventListener("blur",()=>flushCloudSave(code,ei,sn,el));
   });
   document.getElementById("finishWorkoutBtn").onclick=finishWorkout;
 }
-function finishWorkout(){
-  const w=WORKOUTS[selectedWorkout],draft=getDraft(selectedWorkout);
-  const entries=w.exercises.map((ex,ei)=>({name:ex.name,sets:ex.sets.map((_,si)=>{const prev=previousSet(selectedWorkout,ei,si),d=draft?.[ei]?.[si]||{};return {weight:d.weight||prev.weight||"",reps:d.reps||prev.reps||""}})}));
-  const sessions=getSessions();
-  sessions.push({id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())),date:dateKey(),workout:selectedWorkout,name:w.name,entries,savedAt:new Date().toISOString()});
-  saveSessions(sessions);localStorage.removeItem(draftKey(selectedWorkout));setStatus("Training im Verlauf gespeichert");renderTraining();
-  alert("Training gespeichert. Beim nächsten "+selectedWorkout+"-Tag werden diese Werte automatisch als Vergleich verwendet.");
+function escapeAttr(v){return String(v??"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+
+function queueCloudSave(code,ei,sn,weight,reps){
+  const key=`${code}:${ei}:${sn}`;clearTimeout(saveTimers.get(key));
+  syncStatus("Lokal gespeichert • Cloud folgt…");
+  saveTimers.set(key,setTimeout(()=>cloudSaveSet(code,ei,sn,weight,reps),350));
 }
-function renderHistory(){
-  const root=document.getElementById("historyList"),sessions=getSessions().sort((a,b)=>(b.savedAt||"").localeCompare(a.savedAt||""));
-  if(!sessions.length){root.innerHTML='<div class="empty">Noch keine abgeschlossene Einheit gespeichert.<br><br>Deine Eingaben während eines Trainings werden trotzdem automatisch als Entwurf gespeichert.</div>';return}
-  root.innerHTML=sessions.map(s=>`<div class="history-item"><b>${s.workout} · ${s.name}</b><div class="tiny muted">${fmtDate(s.date)} · ${s.entries.reduce((n,e)=>n+e.sets.length,0)} Sätze</div></div>`).join("");
+async function flushCloudSave(code,ei,sn,el){
+  const key=`${code}:${ei}:${sn}`;clearTimeout(saveTimers.get(key));
+  await cloudSaveSet(code,ei,sn,el.querySelector(".weight").value.trim(),el.querySelector(".reps").value.trim());
 }
-function exportData(){
-  const drafts={};Object.keys(localStorage).filter(k=>k.startsWith("fitplan_draft_v3_")).forEach(k=>drafts[k]=safeParse(k,{}));
-  const data={exportedAt:new Date().toISOString(),sessions:getSessions(),drafts};
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);a.download="fitplan-backup-"+dateKey()+".json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+async function cloudSaveSet(code,ei,sn,weight,reps){
+  if(!user)return;
+  const row={
+    user_id:user.id,session_date:dateKey(),workout_code:code,
+    exercise_index:ei,exercise_name:WORKOUTS[code].exercises[ei].name,
+    set_number:sn,weight,reps,completed:false,updated_at:new Date().toISOString()
+  };
+  const {error}=await sb.from("training_entries").upsert(row,{onConflict:"user_id,session_date,workout_code,exercise_index,set_number"});
+  const c=readCache(code),key=`${ei}:${sn}`;
+  if(error){
+    if(c[key])c[key].pending=true;writeCache(code,c);
+    syncStatus("Lokal gespeichert • Cloud-Fehler","err");
+    return;
+  }
+  if(c[key]){c[key].pending=false;c[key].updatedAt=new Date().toISOString()}writeCache(code,c);
+  syncStatus("Cloud gespeichert","ok");
 }
-function clearAll(){
-  if(!confirm("Wirklich alle lokal gespeicherten Trainings und Entwürfe löschen?"))return;
-  Object.keys(localStorage).filter(k=>k.startsWith("fitplan_")).forEach(k=>localStorage.removeItem(k));renderHistory();renderTraining();setStatus("lokale Daten gelöscht",false);
+async function retryPendingCache(){
+  if(!user)return;
+  for(const code of Object.keys(WORKOUTS)){
+    const c=readCache(code);
+    for(const [key,v] of Object.entries(c)){
+      if(!v?.pending)continue;
+      const [ei,sn]=key.split(":").map(Number);
+      await cloudSaveSet(code,ei,sn,v.weight||"",v.reps||"");
+    }
+  }
 }
-renderHome();renderTraining();renderHistory();
+async function finishWorkout(){
+  const code=selectedWorkout;
+  syncStatus("Training wird abgeschlossen…");
+  const setEls=[...document.querySelectorAll(".set")];
+  for(const el of setEls){
+    await cloudSaveSet(code,Number(el.dataset.e),Number(el.dataset.s),el.querySelector(".weight").value.trim(),el.querySelector(".reps").value.trim());
+  }
+  const {error}=await sb.from("training_entries").update({completed:true,updated_at:new Date().toISOString()})
+    .eq("session_date",dateKey()).eq("workout_code",code);
+  if(error){syncStatus("Abschluss fehlgeschlagen","err");alert("Das Training konnte nicht vollständig abgeschlossen werden: "+error.message);return}
+  syncStatus("Training abgeschlossen","ok");
+  alert("Training gespeichert. Beim nächsten "+code+"-Training werden diese Werte als Vergleich geladen.");
+  await renderTraining();
+}
+
+async function renderHistory(){
+  if(!user)return;
+  const root=document.getElementById("historyList");
+  const {data,error}=await sb.from("training_entries")
+    .select("session_date,workout_code,exercise_index,set_number")
+    .eq("completed",true).order("session_date",{ascending:false}).limit(500);
+  if(error){root.innerHTML='<div class="empty">Verlauf konnte nicht geladen werden.</div>';return}
+  if(!data?.length){root.innerHTML='<div class="empty">Noch keine abgeschlossene Einheit in der Cloud gespeichert.</div>';return}
+  const sessions={};
+  data.forEach(r=>{
+    const k=`${r.session_date}|${r.workout_code}`;
+    sessions[k]=sessions[k]||{date:r.session_date,code:r.workout_code,count:0};
+    sessions[k].count++;
+  });
+  root.innerHTML=Object.values(sessions).sort((a,b)=>b.date.localeCompare(a.date)).map(s=>`
+    <div class="history-item"><b>${s.code} · ${WORKOUTS[s.code]?.name||s.code}</b>
+    <div class="tiny muted">${fmtDate(s.date)} · ${s.count} Sätze</div></div>`).join("");
+}
+document.getElementById("forceSyncBtn").onclick=async()=>{
+  syncStatus("Synchronisiere…");
+  await retryPendingCache();
+  if(document.getElementById("training").classList.contains("active"))await renderTraining();
+  await renderHistory();
+  syncStatus("Cloud aktuell","ok");
+};
+
+document.addEventListener("visibilitychange",async()=>{if(document.visibilityState==="visible"&&user){await retryPendingCache();if(document.getElementById("training").classList.contains("active"))await renderTraining()}});
+window.addEventListener("online",retryPendingCache);
+
+boot();
 </script>
 </body>
 </html>
