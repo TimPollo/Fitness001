@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FitPlan">
+<title>FitPlan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="app-cover.png">
+<link rel="apple-touch-icon" sizes="180x180" href="app-cover.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#05070d;
+  --bg-2:#090d16;
+  --panel:#10141f;
+  --panel-2:#141b29;
+  --panel-3:#1a2233;
+  --line:rgba(255,255,255,.075);
+  --line-2:rgba(255,255,255,.12);
+  --text:#f7f9ff;
+  --muted:#9fa9bd;
+  --soft:#cfd6e6;
+  --accent:#6ff0bf;
+  --accent-2:#7ab9ff;
+  --green:#72e8a6;
+  --red:#ff8a99;
+  --orange:#ffba7a;
+  --blue:#86b8ff;
+  --purple:#b79bff;
+  --shadow:0 24px 60px rgba(0,0,0,.38);
+  --shadow-soft:0 10px 26px rgba(0,0,0,.22);
+  --nav-height:88px;
+  --radius-xl:30px;
+  --radius-lg:24px;
+  --radius-md:18px;
+  --radius-sm:14px;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);color-scheme:dark;scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 15% -10%, rgba(122,185,255,.17), transparent 34%),
+    radial-gradient(circle at 92% 5%, rgba(111,240,191,.13), transparent 30%),
+    linear-gradient(180deg, #09101a 0%, #05070d 26%, #05070d 100%);
+  color:var(--text);
+  font-family:"Inter",-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  padding:
+    calc(12px + env(safe-area-inset-top))
+    0
+    calc(var(--nav-height) + 22px + env(safe-area-inset-bottom));
+}
+body::before,
+body::after{
+  content:"";
+  position:fixed;
+  inset:auto;
+  width:220px;
+  height:220px;
+  border-radius:50%;
+  filter:blur(70px);
+  pointer-events:none;
+  z-index:0;
+  opacity:.34;
+}
+body::before{top:-40px;right:-80px;background:rgba(122,185,255,.22)}
+body::after{bottom:120px;left:-90px;background:rgba(111,240,191,.14)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+input,select,button{-webkit-tap-highlight-color:transparent}
+main,nav,.login{position:relative;z-index:1}
+.app{width:min(940px,100%);margin:0 auto;padding:10px 16px 34px}
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  margin-bottom:18px;padding:8px 2px 4px;
+}
+.brand{display:flex;align-items:center;gap:12px;font-size:30px;font-weight:900;letter-spacing:-1.6px}
+.brand-mark{
+  width:18px;height:18px;border-radius:50%;
+  background:linear-gradient(180deg,#ffffff 0%,#dfe7f8 100%);
+  position:relative;box-shadow:0 0 0 1px rgba(255,255,255,.14), 0 10px 24px rgba(255,255,255,.08);
+  flex:0 0 auto;
+}
+.brand-mark::after{
+  content:"";position:absolute;right:-1px;top:-6px;width:8px;height:5px;border-radius:100% 0 100% 0;
+  background:linear-gradient(180deg,#dfffea 0%, #bdf0d1 100%);transform:rotate(-28deg)
+}
+.sync{
+  font-size:12px;font-weight:600;line-height:1.2;text-align:right;color:var(--muted);
+  padding:10px 14px;border-radius:999px;border:1px solid var(--line);
+  background:rgba(18,24,36,.72);backdrop-filter:blur(18px);
+}
+.sync.ok{color:var(--green)}
+.sync.err{color:var(--red)}
+.eyebrow{
+  font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:#8f98ac
+}
+h1{
+  margin:8px 0 20px;
+  font-size:clamp(42px,8.2vw,64px);
+  line-height:.94;letter-spacing:-2.7px;font-weight:900;
+}
+h2{font-size:clamp(24px,5vw,30px);line-height:1.04;margin:0 0 14px;letter-spacing:-1px}
+h3{font-size:18px;margin:0 0 8px;letter-spacing:-.3px}
+.card,.subcard,.stat,.set,.savebar,.account,.login-card,.tab.active,.pill,.segmented button,input,select{
+  backdrop-filter:blur(18px);
+}
+.card{
+  position:relative;
+  background:linear-gradient(180deg, rgba(20,27,41,.92) 0%, rgba(16,20,31,.96) 100%);
+  border:1px solid var(--line);
+  border-radius:var(--radius-xl);
+  padding:18px;
+  margin:14px 0;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.card::before{
+  content:"";position:absolute;inset:0 0 auto 0;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+  pointer-events:none;
+}
+.card.flat{box-shadow:var(--shadow-soft)}
+.subcard{
+  background:linear-gradient(180deg, rgba(22,30,46,.88), rgba(18,24,36,.92));
+  border:1px solid var(--line);
+  border-radius:22px;padding:16px;
+}
+.row{display:flex;align-items:center;gap:12px}
+.between{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.muted{color:var(--muted)}
+.tiny{font-size:12px}
+.micro{font-size:10px}
+.pill{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:38px;padding:9px 14px;border-radius:999px;
+  border:1px solid var(--line-2);background:rgba(255,255,255,.04);
+  color:var(--soft);font-size:12px;font-weight:700;
+}
+.pill.green{color:var(--green);background:rgba(114,232,166,.09)}
+.pill.orange{color:var(--orange);background:rgba(255,186,122,.09)}
+.pill.white{color:var(--text)}
+.btn{
+  border:0;min-height:56px;padding:0 18px;border-radius:20px;
+  background:linear-gradient(180deg,#f8fbff 0%,#e7eefb 100%);
+  color:#0b1220;font-weight:800;letter-spacing:-.03em;box-shadow:0 14px 32px rgba(255,255,255,.06);
+}
+.btn:hover{filter:brightness(1.02)}
+.btn.secondary{
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  color:var(--text);border:1px solid var(--line-2);box-shadow:none;
+}
+.btn.ghost{background:transparent;color:var(--soft);border:1px solid var(--line-2);box-shadow:none}
+.btn.danger{background:#2a151b;color:#ffc4cb;border:1px solid #5a2b33;box-shadow:none}
+.btn.full{width:100%}
+.btn.small{min-height:44px;padding:0 16px;border-radius:16px;font-size:15px}
+.account{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:14px 16px;background:rgba(19,24,36,.82);
+  border:1px solid var(--line);border-radius:26px;margin-bottom:16px;box-shadow:var(--shadow-soft)
+}
+.account b{display:block;font-size:18px;letter-spacing:-.04em;margin-top:3px}
+.view{display:none}
+.view.active{display:block;animation:fadeIn .18s ease}
+@keyframes fadeIn{from{opacity:.65;transform:translateY(6px)}to{opacity:1;transform:none}}
+.today{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end}
+.today-title{font-size:clamp(32px,7vw,48px);font-weight:900;letter-spacing:-1.7px;line-height:.98}
+.day{display:grid;grid-template-columns:92px minmax(0,1fr) auto;gap:10px;align-items:center;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.day:last-child{border-bottom:0}
+.day.current{color:var(--text);font-weight:800}
+.day.current>span:first-child::before{content:"";display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:50%;margin-right:8px;box-shadow:0 0 14px rgba(111,240,191,.4)}
+.segmented{display:flex;gap:8px;overflow:auto;padding-bottom:4px;scrollbar-width:none}
+.segmented::-webkit-scrollbar{display:none}
+.segmented button{
+  white-space:nowrap;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);
+  padding:10px 14px;border-radius:999px;font-weight:800;min-height:42px
+}
+.segmented button.active{background:linear-gradient(180deg,#f8fbff 0%,#e9eef7 100%);color:#0b1220;border-color:transparent}
+.weight-form{display:grid;grid-template-columns:minmax(0,1fr) 132px;gap:10px;align-items:end;margin-top:16px}
+.save-weight-btn{grid-column:1 / -1}
+label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px}
+input,select{
+  width:100%;min-width:0;height:58px;padding:0 16px;
+  background:rgba(6,10,18,.74);border:1px solid var(--line-2);color:var(--text);
+  border-radius:18px;outline:none;font-size:18px;letter-spacing:-.03em;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)
+}
+input::placeholder{color:#7e889e}
+input:focus,select:focus{border-color:rgba(134,184,255,.48);box-shadow:0 0 0 4px rgba(134,184,255,.1)}
+.notice{font-size:13px;color:var(--muted);line-height:1.52;margin-top:12px}
+.statusline{font-size:13px;margin-top:12px;min-height:19px;color:var(--muted);font-weight:600}
+.statusline.ok{color:var(--green)}
+.statusline.err{color:var(--red)}
+.workout-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.warmup-box{
+  margin:14px 0 4px;background:rgba(6,10,18,.55);border:1px solid var(--line);border-radius:24px;padding:16px
+}
+.warmup-item{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;padding:10px 0;border-top:1px solid rgba(255,255,255,.06)}
+.warmup-item:first-of-type{border-top:0}
+.warmup-check{
+  appearance:none;width:20px;height:20px;border:1px solid #59657b;border-radius:8px;background:#1b2332;margin:2px 0 0;display:grid;place-items:center
+}
+.warmup-check:checked{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 3px rgba(111,240,191,.12)}
+.warmup-check:checked::after{content:"✓";color:#072015;font-weight:900;font-size:13px}
+.exercise{padding:18px 0;border-top:1px solid rgba(255,255,255,.08)}
+.exercise:first-child{border-top:0;padding-top:2px}
+.exercise-title{font-size:18px;font-weight:800;letter-spacing:-.03em}
+.cue{font-size:13px;color:#b8c2d6;margin-top:6px;line-height:1.48}
+.set{
+  margin-top:12px;border:1px solid var(--line);background:rgba(7,12,20,.58);border-radius:22px;padding:14px
+}
+.set-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.set-name{font-size:13px;font-weight:800;color:#cfd7ea;text-transform:uppercase;letter-spacing:.1em}
+.last{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.45}
+.inputs{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(96px,.9fr);gap:10px}
+.compare{font-size:11px;padding:6px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap;font-weight:700}
+.compare.up{color:var(--green);border-color:rgba(114,232,166,.35);background:rgba(114,232,166,.08)}
+.compare.down{color:#ffadb7;border-color:rgba(255,138,153,.35);background:rgba(255,138,153,.08)}
+.savebar{
+  position:sticky;bottom:calc(var(--nav-height) + 16px);z-index:10;margin-top:18px;padding:12px;
+  background:rgba(12,16,25,.88);border:1px solid var(--line);border-radius:24px;
+  box-shadow:0 18px 44px rgba(0,0,0,.34)
+}
+.save-note{text-align:center;font-size:12px;color:var(--muted);line-height:1.45;margin-top:8px}
+.weight-hero{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:12px;align-items:stretch}
+.weight-number{font-size:clamp(46px,8vw,58px);font-weight:900;letter-spacing:-2.4px;line-height:.95}
+.weight-number span{font-size:22px;color:var(--muted);letter-spacing:-.02em;font-weight:700}
+.stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+.stat{
+  background:linear-gradient(180deg, rgba(15,22,34,.9), rgba(9,14,22,.9));
+  border:1px solid var(--line);border-radius:24px;padding:16px;min-height:120px;
+  display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-soft)
+}
+.stat b{font-size:34px;line-height:1;letter-spacing:-.06em}
+.stat span{font-size:13px;color:var(--muted);line-height:1.38}
+.chart-wrap{position:relative;height:310px;margin-top:12px}
+.chart-wrap.small{height:260px}
+.chart-wrap canvas{width:100%!important;height:100%!important}
+.chart-empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:13px;padding:24px}
+.chart-empty.show{display:flex}
+.progress-selector{display:grid;grid-template-columns:1fr;gap:10px}
+.history-item{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.history-item:last-child{border-bottom:0}
+.empty{
+  padding:20px;border:1px dashed var(--line-2);border-radius:20px;color:var(--muted);text-align:center;
+  background:rgba(255,255,255,.02)
+}
+.progress-row{display:grid;grid-template-columns:95px minmax(0,1fr);gap:12px;padding:13px 0;border-top:1px solid rgba(255,255,255,.06)}
+.progress-row:first-child{border-top:0}
+.progress-date{font-size:12px;color:var(--muted);font-weight:800}
+.progress-sets{display:flex;gap:6px;flex-wrap:wrap}
+.set-chip{
+  font-size:11px;border:1px solid var(--line-2);background:rgba(255,255,255,.03);
+  border-radius:999px;padding:7px 9px;color:#d9e1f0;font-weight:700
+}
+.login{
+  position:fixed;inset:0;
+  background:radial-gradient(circle at 50% 0%, rgba(122,185,255,.22), transparent 35%), linear-gradient(180deg, #09101a 0%, #05070d 100%);
+  z-index:100;display:flex;align-items:center;justify-content:center;padding:24px
+}
+.login.hidden{display:none}
+.login-card{
+  width:min(430px,100%);border:1px solid var(--line);background:rgba(16,20,31,.88);
+  border-radius:32px;padding:24px;box-shadow:0 34px 90px rgba(0,0,0,.48)
+}
+.login-logo{font-size:40px;font-weight:900;letter-spacing:-1.7px;margin-bottom:8px}
+.login p{color:var(--muted);line-height:1.58;margin:14px 0 20px}
+.login-error{color:var(--red);font-size:13px;margin-top:12px;min-height:18px;font-weight:600}
+nav{
+  position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  width:min(740px, calc(100% - 18px));padding:8px;background:rgba(14,18,28,.72);
+  border:1px solid rgba(255,255,255,.08);border-radius:30px;box-shadow:0 18px 45px rgba(0,0,0,.45);
+  backdrop-filter:blur(22px);display:grid;grid-template-columns:repeat(4,1fr);gap:8px;z-index:30;
+}
+.tab{
+  border:0;background:transparent;color:#8892a7;min-height:72px;border-radius:22px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  font-size:12px;font-weight:800;letter-spacing:-.02em;padding:6px
+}
+.tab.active{
+  color:var(--text);background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+  border:1px solid rgba(255,255,255,.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.06)
+}
+.tab-icon{
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:999px;
+  background:rgba(255,255,255,.03)
+}
+.tab.active .tab-icon{background:rgba(255,255,255,.07)}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+@media(min-width:720px){
+  .app{padding:14px 22px 42px}
+  .weight-form{grid-template-columns:minmax(0,1fr) 150px auto}
+  .save-weight-btn{grid-column:auto}
+  .progress-selector{grid-template-columns:1fr 1fr}
+  .stats-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .topbar{align-items:flex-start}
+  .brand{font-size:26px}
+  .sync{font-size:11px;padding:9px 12px;max-width:132px}
+  .account{flex-direction:column;align-items:stretch}
+  .today{grid-template-columns:1fr}
+  .day{grid-template-columns:76px minmax(0,1fr)}
+  .day>span:last-child{grid-column:2}
+  .weight-hero{grid-template-columns:1fr}
+  .chart-wrap{height:280px}
+  .chart-wrap.small{height:230px}
+  .inputs{grid-template-columns:1fr}
+  .progress-row{grid-template-columns:1fr}
+  .savebar{bottom:calc(var(--nav-height) + 10px)}
+}
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login">
+  <div class="login-card">
+    <div class="brand" style="margin-bottom:8px"><span class="brand-mark"></span>FitPlan</div>
+    <div class="eyebrow">Cloud Sync</div>
+    <p>Melde dich mit deinem GitHub-Account an. Trainings- und Körpergewichtsdaten werden über Supabase zwischen iPhone, iPad und Mac synchronisiert.</p>
+    <button id="loginBtn" class="btn full">Mit GitHub anmelden</button>
+    <div id="loginError" class="login-error"></div>
+  </div>
+</div>
+
+<main class="app">
+  <div class="topbar">
+    <div class="brand"><span class="brand-mark"></span>FitPlan</div>
+    <div id="syncStatus" class="sync">Verbinde…</div>
+  </div>
+
+  <section id="home" class="view active">
+    <div id="accountBox" class="account">
+      <div>
+        <div class="tiny muted">Angemeldet als</div>
+        <b id="accountName">–</b>
+      </div>
+      <button id="logoutBtn" class="btn secondary small">Abmelden</button>
+    </div>
+
+    <div class="eyebrow" id="dateLabel"></div>
+    <h1>Heute</h1>
+
+    <div class="card" id="morningWeightCard">
+      <div class="row between wrap">
+        <div>
+          <div class="eyebrow">Morgengewicht</div>
+          <h2 style="margin:6px 0 0">Direkt nach dem Aufstehen</h2>
+        </div>
+        <span class="pill white">nach Toilette · vor Essen/Trinken</span>
+      </div>
+      <div class="weight-form">
+        <div>
+          <label for="homeWeightInput">Gewicht in kg</label>
+          <input id="homeWeightInput" type="number" min="30" max="250" step="0.1" inputmode="decimal" placeholder="z. B. 82,4">
+        </div>
+        <div>
+          <label for="homeWeightDate">Tag</label>
+          <input id="homeWeightDate" type="date">
+        </div>
+        <button id="saveHomeWeightBtn" class="btn save-weight-btn">Speichern</button>
+      </div>
+      <div id="homeWeightStatus" class="statusline"></div>
+    </div>
+
+    <div class="card">
+      <div class="today">
+        <div>
+          <div class="eyebrow">Tagesplan</div>
+          <div id="todayTitle" class="today-title">–</div>
+          <div id="todaySub" class="muted" style="margin-top:6px">–</div>
+        </div>
+        <button id="todayOpenBtn" class="btn">Öffnen</button>
+      </div>
+      <div id="todayExtra" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card flat">
+      <h2>Woche</h2>
+      <div id="weekList"></div>
+    </div>
+  </section>
+
+  <section id="training" class="view">
+    <div class="eyebrow">Cloud-synchronisiert</div>
+    <h1>Training</h1>
+    <div class="segmented" id="workoutTabs"></div>
+    <div class="card">
+      <div class="workout-head">
+        <div>
+          <div class="eyebrow" id="workoutCode"></div>
+          <h2 id="workoutTitle"></h2>
+        </div>
+        <span class="pill white" id="workoutDay"></span>
+      </div>
+      <div id="workoutExtra"></div>
+      <div id="warmupRoot"></div>
+      <div id="exerciseList"></div>
+      <div class="savebar">
+        <button id="finishWorkoutBtn" class="btn full">Training abschließen</button>
+        <div class="save-note">Jeder Arbeitssatz wird automatisch lokal gesichert und kurz danach in die Cloud synchronisiert. Damit bleibt deine gesamte Progression erhalten.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="bodyweight" class="view">
+    <div class="eyebrow">Körpergewicht</div>
+    <h1>Gewicht</h1>
+
+    <div class="card">
+      <div class="weight-hero">
+        <div>
+          <div class="eyebrow">Aktueller Stand</div>
+          <div id="latestWeightBig" class="weight-number">– <span>kg</span></div>
+          <div id="latestWeightDate" class="tiny muted" style="margin-top:10px">Noch kein Eintrag</div>
+        </div>
+        <div class="subcard">
+          <div class="tiny muted">7-Tage-Ø</div>
+          <b id="avg7Big" style="font-size:28px;letter-spacing:-.06em">–</b>
+          <div class="tiny muted" style="margin-top:6px">kg</div>
+        </div>
+      </div>
+
+      <div class="weight-form">
+        <div>
+          <label for="bodyWeightInput">Morgengewicht in kg</label>
+          <input id="bodyWeightInput" type="number" min="30" max="250" step="0.1" inputmode="decimal" placeholder="z. B. 82,4">
+        </div>
+        <div>
+          <label for="bodyWeightDate">Tag</label>
+          <input id="bodyWeightDate" type="date">
+        </div>
+        <button id="saveBodyWeightBtn" class="btn save-weight-btn">Speichern</button>
+      </div>
+
+      <div class="notice">Für vergleichbare Werte möglichst immer unter denselben Bedingungen messen: morgens, nach dem Toilettengang und vor Essen oder Trinken.</div>
+      <div id="bodyWeightStatus" class="statusline"></div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat"><b id="weightStatCurrent">–</b><span>aktuell</span></div>
+      <div class="stat"><b id="weightStatAvg7">–</b><span>7-Tage-Ø</span></div>
+      <div class="stat"><b id="weightStat30">–</b><span>Veränderung 30 T.</span></div>
+      <div class="stat"><b id="weightStatAll">–</b><span>seit Beginn</span></div>
+    </div>
+
+    <div class="card flat">
+      <div class="row between wrap">
+        <h2 style="margin:0">Gewichtsverlauf</h2>
+        <div class="segmented" id="weightRangeTabs">
+          <button data-days="14">14 T.</button>
+          <button class="active" data-days="30">30 T.</button>
+          <button data-days="90">90 T.</button>
+          <button data-days="0">Alles</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="bodyWeightChart"></canvas>
+        <div id="bodyWeightChartEmpty" class="chart-empty">Noch nicht genug Gewichtsdaten für einen Verlauf.</div>
+      </div>
+    </div>
+
+    <div class="card flat">
+      <h2>Letzte Einträge</h2>
+      <div id="bodyWeightHistory"></div>
+    </div>
+  </section>
+
+  <section id="progress" class="view">
+    <div class="eyebrow">Trainingsanalyse</div>
+    <h1>Fortschritt</h1>
+
+    <div class="card flat">
+      <h2>Übungsfortschritt</h2>
+      <div class="progress-selector">
+        <div>
+          <label for="progressWorkoutSelect">Trainingstag</label>
+          <select id="progressWorkoutSelect"></select>
+        </div>
+        <div>
+          <label for="progressExerciseSelect">Übung</label>
+          <select id="progressExerciseSelect"></select>
+        </div>
+      </div>
+      <div class="stats-grid" style="margin-top:14px">
+        <div class="stat"><b id="progressSessions">–</b><span>Einheiten</span></div>
+        <div class="stat"><b id="progressLastLoad">–</b><span>letzte Last</span></div>
+        <div class="stat"><b id="progressLastReps">–</b><span>letzte Wdh.</span></div>
+        <div class="stat"><b id="progressTrend">–</b><span>Trend</span></div>
+      </div>
+    </div>
+
+    <div class="card flat">
+      <div class="row between wrap">
+        <h2 style="margin:0">Last / Stack</h2>
+        <span id="loadChartUnit" class="pill">–</span>
+      </div>
+      <div class="chart-wrap small">
+        <canvas id="loadChart"></canvas>
+        <div id="loadChartEmpty" class="chart-empty">Für diese Übung gibt es noch keine numerisch darstellbare Last.</div>
+      </div>
+    </div>
+
+    <div class="card flat">
+      <h2>Wiederholungen</h2>
+      <div class="chart-wrap small">
+        <canvas id="repsChart"></canvas>
+        <div id="repsChartEmpty" class="chart-empty">Noch keine Wiederholungsdaten vorhanden.</div>
+      </div>
+    </div>
+
+    <div class="card flat">
+      <h2>Verlauf der ausgewählten Übung</h2>
+      <div id="exerciseHistoryList"></div>
+    </div>
+
+    <div class="card flat">
+      <h2>Abgeschlossene Einheiten</h2>
+      <div id="historyList"></div>
+    </div>
+
+    <div class="card flat">
+      <h2>Synchronisation</h2>
+      <p class="tiny muted" style="line-height:1.55">Trainings- und Gewichtsdaten sind geräteübergreifend in Supabase gespeichert. Zusätzlich hält FitPlan einen lokalen Puffer bereit, falls die Verbindung kurz weg ist.</p>
+      <button id="forceSyncBtn" class="btn secondary full" style="margin-top:12px">Jetzt neu synchronisieren</button>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button class="tab active" data-view="home">
+    <span class="tab-icon">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V20h13V9.5"></path></svg>
+    </span>
+    <span>Heute</span>
+  </button>
+  <button class="tab" data-view="training">
+    <span class="tab-icon">
+      <svg viewBox="0 0 24 24"><path d="M8 7H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M16 7h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"></path><path d="M8 12h8"></path><path d="M8 8v8"></path><path d="M16 8v8"></path></svg>
+    </span>
+    <span>Training</span>
+  </button>
+  <button class="tab" data-view="bodyweight">
+    <span class="tab-icon">
+      <svg viewBox="0 0 24 24"><path d="M6 7.5h12"></path><path d="M4.5 9a4.5 4.5 0 0 1 4.5-4.5h6A4.5 4.5 0 0 1 19.5 9v6a4.5 4.5 0 0 1-4.5 4.5H9A4.5 4.5 0 0 1 4.5 15Z"></path><path d="M12 9.5l2 2"></path></svg>
+    </span>
+    <span>Gewicht</span>
+  </button>
+  <button class="tab" data-view="progress">
+    <span class="tab-icon">
+      <svg viewBox="0 0 24 24"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-7"></path></svg>
+    </span>
+    <span>Fortschritt</span>
+  </button>
+</nav>
+<script>
+const SUPABASE_URL="https://korenyaxchoojrsenypc.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_mAzRO8wGgj9hh3ZW3TdNCw_gHiEH088";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const WEEK=[
+  {day:"Montag",type:"rest",title:"Rest Day",sub:"Regeneration"},
+  {day:"Dienstag",type:"workout",code:"T1",title:"Oberkörper",sub:"Krafttraining"},
+  {day:"Mittwoch",type:"workout",code:"T2",title:"Unterkörper",sub:"Krafttraining"},
+  {day:"Donnerstag",type:"cardio",title:"Cardio",sub:"70 Minuten"},
+  {day:"Freitag",type:"workout",code:"T3",title:"Brust + Bizeps",sub:"Krafttraining"},
+  {day:"Samstag",type:"workout",code:"T4",title:"Beine + Bauch",sub:"Krafttraining"},
+  {day:"Sonntag",type:"workout",code:"T5",title:"Rücken + Trizeps",sub:"Krafttraining + 20 Min Cardio"}
+];
+const WORKOUTS={
+  T1:{name:"Oberkörper",day:"Dienstag",warmup:[
+    "3–4 Min allgemein warm werden: Armkreisen, Schulterblätter vor/zurück, lockere Kabelzüge.",
+    "Außenrotation am Kabelturm · 2×12–15 je Seite · sehr leicht · Ellbogen am Körper.",
+    "Innenrotation am Kabelturm · 1×12–15 je Seite · sehr leicht und kontrolliert.",
+    "Face Pulls oder Scapula Rows · 1×15 · Fokus Schulterblätter, nicht auspowern.",
+    "Vor der ersten Druck- und Zugübung je 2–3 Steigerungssätze (ca. 40/60/80 % Arbeitsgewicht), weit vom Muskelversagen entfernt."
+  ],exercises:[
+    {name:"Bizeps-Curls mit Stange am Kabelturm",cue:"Kabelturm ganz unten.",sets:[["8P + 3,75kg","10"],["8P + 3,75kg","9"]]},
+    {name:"Single Hammer Curls an der Bank",cue:"Mit der freien Hand an der Bank festhalten.",sets:[["15kg","12"]]},
+    {name:"Trizeps über Kopf am Kabelturm",cue:"Sitzend auf der Bank für mehr Stabilität.",sets:[["10P + 1,25kg","13"],["10P + 1,25kg","12"]]},
+    {name:"Trizeps Pushdowns",cue:"Am Kabelturm.",sets:[["13P + 1,25kg","13"]]},
+    {name:"Ägyptisches Seitheben am Kabelturm",cue:"Kontrollierte Ausführung.",sets:[["1P + 1,25kg","L 11"],["1P + 1,25kg","L 8"]]},
+    {name:"Schrägbankdrücken",cue:"Bank: Stufen 2 und 3.",sets:[["22,5kg","10"],["22,5kg","8"]]},
+    {name:"Butterfly",cue:"Bank: Stufen 6 und 4.",sets:[["4P","11"]]},
+    {name:"Pulldowns von oben",cue:"Bank: Stufen 5 und 4.",sets:[["7P + 1,25kg","L 13"],["7P + 1,25kg","L 11"]]},
+    {name:"Rudern mit langer Stange",cue:"Abschluss des Oberkörpertags.",sets:[["14P + 15kg","10"]]}
+  ]},
+  T2:{name:"Unterkörper",day:"Mittwoch",warmup:[
+    "2 Runden locker: 8–10 Kniebeugen ohne Gewicht + 8 Hüftbeugen/Hip Hinges + 8 Ausfallschritte je Seite.",
+    "Sprunggelenk mobilisieren · 10 kontrollierte Knee-over-toe-Wiederholungen je Seite.",
+    "1 leichter Satz Beinbeuger · 12–15 Wdh. als Vorbereitung für die hintere Kette.",
+    "High-Bar Squat: 3–4 Steigerungssätze bis zum Arbeitsgewicht, keine Aufwärmwiederholung bis ans Versagen."
+  ],exercises:[
+    {name:"High-Bar Squats",cue:"Fersen auf zwei Gewichten erhöht.",sets:[["70kg","10"],["70kg","9"]]},
+    {name:"Single Beinstrecker",cue:"Einbeinig.",sets:[["40kg + 1,75kg","12"],["40kg + 1,75kg","10"]]},
+    {name:"Beinbeuger",cue:"Zwei Arbeitssätze.",sets:[["46,25kg","11"],["46,25kg","9"]]},
+    {name:"Rumänisches Kreuzheben",cue:"Kontrollierte Hüftstreckung.",sets:[["70kg","11"],["70kg","8"]]},
+    {name:"Wadenheben sitzend",cue:"Sitzende Variante.",sets:[["100kg","7"],["80kg","4"]]},
+    {name:"Adduktoren am Kabelturm",cue:"Einbeinig; Bein nach innen führen.",sets:[["5P","10"],["5P","9"]]}
+  ]},
+  T3:{name:"Brust + Bizeps",day:"Freitag",warmup:[
+    "3 Min Schultergürtel aktivieren: Armkreisen + Schulterblatt-Pro-/Retraktion.",
+    "Außenrotation am Kabelturm · 2×12–15 je Seite · sehr leicht.",
+    "Innenrotation am Kabelturm · 1×12–15 je Seite · sehr leicht.",
+    "Face Pulls · 1×15 mit sauberer Außenrotation.",
+    "Schrägbankdrücken: 3 Steigerungssätze (leicht → mittel → nahe Arbeitsgewicht), ohne Ermüdung."
+  ],exercises:[
+    {name:"Schrägbankdrücken mit Langhantel",cue:"Zwei Arbeitssätze.",sets:[["52,5kg","11"],["52,5kg","10"]]},
+    {name:"Untere Brust am Kabelturm",cue:"Zwei Arbeitssätze.",sets:[["4P","12"],["4P","11"]]},
+    {name:"Butterfly",cue:"Bank: Stufen 6 und 4.",sets:[["4P","8"],["4P","8"]]},
+    {name:"Schulterpresse mit Langhantel",cue:"Zwei Arbeitssätze.",sets:[["30kg","12"],["30kg","11"]]},
+    {name:"Seitheben mit Kurzhanteln",cue:"Zwei Arbeitssätze.",sets:[["10kg","12"],["10kg","12"]]},
+    {name:"Preacher Curls am Kabelturm",cue:"Bank: Stufen 5 und 0.",sets:[["3P","R 13"],["3P","R 11"]]},
+    {name:"Hammer Curls auf der Bank",cue:"Bank: Stufen 4 und 2.",sets:[["13,5kg","20"],["13,5kg","18"]]}
+  ]},
+  T4:{name:"Beine + Bauch",day:"Samstag",warmup:[
+    "2 Runden locker: 10 Air Squats + 8 Reverse Lunges je Seite + 10 Hip Hinges.",
+    "Sprunggelenk mobilisieren · 10 Wiederholungen je Seite; danach 20–30 Sek. tiefe Squat-Position locker halten.",
+    "1 leichter Satz Beinstrecker und Beinbeuger · je 12–15 Wdh.",
+    "Front Squat: 3–4 Steigerungssätze bis zum Arbeitsgewicht; Rumpf aktiv, keine Ermüdung sammeln."
+  ],exercises:[
+    {name:"Front Squats",cue:"Fersen erhöht.",sets:[["",""],["",""]]},
+    {name:"Unterstützte Split Squats",cue:"Zwei Arbeitssätze.",sets:[["12,5kg","12"],["12,5kg","10"]]},
+    {name:"Single Beinstrecker",cue:"Einbeinig.",sets:[["40kg","10"],["40kg","9"]]},
+    {name:"Beinbeuger",cue:"Zwei Arbeitssätze.",sets:[["46,25kg","8"],["46,25kg","7"]]},
+    {name:"Wadenheben stehend",cue:"Stehende Variante.",sets:[["90kg","6"],["90kg","9"]]},
+    {name:"Hanging Leg Raises",cue:"Ein Arbeitssatz.",sets:[["","10"]]},
+    {name:"Bauch am Kabelturm mit Seil",cue:"Zum Abschluss.",sets:[["7P","14"],["7P","12"]]}
+  ]},
+  T5:{name:"Rücken + Trizeps",day:"Sonntag",extra:"Nach dem Krafttraining: 20 Minuten Cardio.",warmup:[
+    "3 Min Schulterblätter bewegen: lockere Scapula Rows + Armkreisen.",
+    "Scapular Pull-ups · 2×6–8 kontrollierte Wiederholungen.",
+    "Außenrotation am Kabelturm · 1–2×12–15 je Seite · sehr leicht.",
+    "Face Pulls · 1×15, sauber und ohne Schwung.",
+    "Für Klimmzüge/Pulldowns 1–2 leichte Vorbereitungssätze; nicht bis ans Muskelversagen."
+  ],exercises:[
+    {name:"Klimmzüge",cue:"Zwei Arbeitssätze.",sets:[["Körpergewicht","10"],["Körpergewicht","7"]]},
+    {name:"Pulldowns von oben",cue:"Bank: Stufen 5 und 4.",sets:[["7P + 1,25kg","10"],["7P + 1,25kg","9"]]},
+    {name:"Horizontaler Pull",cue:"Bank: Stufen 5 und 4.",sets:[["7P + 1,25kg","10"],["7P + 1,25kg","9"]]},
+    {name:"Face Pulls auf der Bank",cue:"Zwei Arbeitssätze.",sets:[["9P + 1,25kg","10"],["9P + 1,25kg","10"]]},
+    {name:"Nacken am Kabelturm",cue:"Jeweils einzeln.",sets:[["2P + 1,25kg","9"],["2P + 1,25kg","7"]]},
+    {name:"Überkopf Trizeps mit Langstange",cue:"Sitzend auf der Bank für Stabilität.",sets:[["10P + 1,25kg","11"],["10P + 1,25kg","10"]]},
+    {name:"Trizeps Pushdowns mit Stange",cue:"Zwei Arbeitssätze.",sets:[["10P + 1,25kg","13"],["10P + 1,25kg","12"]]}
+  ]}
+};
+const DAYS=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const BODY_CODE="BODYWEIGHT";
+let user=null,selectedWorkout="T1",renderToken=0,weightRangeDays=30,progressWorkout="T1",progressExercise=0;
+let bodyWeightChart=null,loadChart=null,repsChart=null;
+const saveTimers=new Map();
+
+function dateKey(d=new Date()){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")}
+function fmtDate(s){const d=new Date(s+"T12:00:00");return d.toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"})}
+function fmtShortDate(s){const d=new Date(s+"T12:00:00");return d.toLocaleDateString("de-DE",{day:"2-digit",month:"2-digit"})}
+function fmt1(n){return Number(n).toLocaleString("de-DE",{minimumFractionDigits:1,maximumFractionDigits:1})}
+function clamp(v,min,max){return Math.min(max,Math.max(min,v))}
+function syncStatus(text,kind=""){const el=document.getElementById("syncStatus");el.textContent=text;el.className="sync "+kind}
+function cacheKey(code){return `fitplan_cloudcache_${user?.id||"anon"}_${dateKey()}_${code}`}
+function readCache(code){try{return JSON.parse(localStorage.getItem(cacheKey(code))||"{}")}catch{return {}}}
+function writeCache(code,obj){localStorage.setItem(cacheKey(code),JSON.stringify(obj))}
+function warmupKey(code){return `fitplan_warmup_v2_${user?.id||"anon"}_${dateKey()}_${code}`}
+function getWarmupState(code){try{return JSON.parse(localStorage.getItem(warmupKey(code))||"[]")}catch{return []}}
+function setWarmupState(code,state){localStorage.setItem(warmupKey(code),JSON.stringify(state))}
+function bodyCacheKey(day){return `fitplan_bodyweight_${user?.id||"anon"}_${day}`}
+function readBodyCache(day){try{return JSON.parse(localStorage.getItem(bodyCacheKey(day))||"null")}catch{return null}}
+function writeBodyCache(day,obj){localStorage.setItem(bodyCacheKey(day),JSON.stringify(obj))}
+function currentSchedule(){return WEEK.find(x=>x.day===DAYS[new Date().getDay()])}
+function escapeAttr(v){return String(v??"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function escapeHtml(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function parseDecimal(v){const n=Number(String(v??"").trim().replace(",","."));return Number.isFinite(n)?n:null}
+
+async function signIn(){document.getElementById("loginError").textContent="";const redirectTo=window.location.origin+window.location.pathname;const {error}=await sb.auth.signInWithOAuth({provider:"github",options:{redirectTo}});if(error)document.getElementById("loginError").textContent=error.message}
+async function signOut(){await sb.auth.signOut();user=null;document.getElementById("loginScreen").classList.remove("hidden")}
+document.getElementById("loginBtn").onclick=signIn;document.getElementById("logoutBtn").onclick=signOut;
+
+async function boot(){
+  const today=dateKey();document.getElementById("homeWeightDate").value=today;document.getElementById("bodyWeightDate").value=today;
+  const {data:{session},error}=await sb.auth.getSession();if(error)syncStatus("Login-Fehler","err");user=session?.user||null;
+  if(!user){document.getElementById("loginScreen").classList.remove("hidden");return}
+  document.getElementById("loginScreen").classList.add("hidden");document.getElementById("accountName").textContent=user.user_metadata?.user_name||user.email||"GitHub";syncStatus("Cloud verbunden","ok");
+  renderHome();await hydrateBodyInputs(today);await renderTraining();await renderBodyweight();initProgressSelectors();await renderProgress();await retryPendingCache();await retryPendingBodyWeights();
+}
+sb.auth.onAuthStateChange(async(_event,session)=>{user=session?.user||null;if(user){document.getElementById("loginScreen").classList.add("hidden");document.getElementById("accountName").textContent=user.user_metadata?.user_name||user.email||"GitHub";renderHome();await hydrateBodyInputs(dateKey());await renderBodyweight();initProgressSelectors();await renderProgress()}else document.getElementById("loginScreen").classList.remove("hidden")});
+
+function renderHome(){const now=new Date(),s=currentSchedule();document.getElementById("dateLabel").textContent=now.toLocaleDateString("de-DE",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});document.getElementById("todayTitle").textContent=s.title;document.getElementById("todaySub").textContent=s.sub;const btn=document.getElementById("todayOpenBtn"),extra=document.getElementById("todayExtra");extra.innerHTML="";if(s.type==="workout"){btn.style.display="";btn.onclick=()=>{selectedWorkout=s.code;switchView("training")};if(s.day==="Sonntag")extra.innerHTML='<span class="pill green">20 Min Cardio danach</span>'}else{btn.style.display="none";extra.innerHTML=s.type==="cardio"?'<span class="pill green">70 Min Cardio</span>':'<span class="pill">Regeneration</span>'}document.getElementById("weekList").innerHTML=WEEK.map(x=>`<div class="day ${x.day===DAYS[now.getDay()]?"current":""}"><span>${x.day}</span><span><b>${x.title}</b><br><span class="tiny muted">${x.sub}</span></span><span class="pill">${x.type==="workout"?x.code:(x.type==="cardio"?"Cardio":"Rest")}</span></div>`).join("")}
+
+async function switchView(id){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===id));if(id==="training")await renderTraining();if(id==="bodyweight")await renderBodyweight();if(id==="progress")await renderProgress();window.scrollTo({top:0,behavior:"smooth"})}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+
+function renderWorkoutTabs(){const root=document.getElementById("workoutTabs");root.innerHTML=Object.entries(WORKOUTS).map(([code,w])=>`<button class="${code===selectedWorkout?"active":""}" data-code="${code}">${code} · ${w.name}</button>`).join("");root.querySelectorAll("button").forEach(b=>b.onclick=async()=>{selectedWorkout=b.dataset.code;await renderTraining()})}
+function renderWarmup(code){const w=WORKOUTS[code],state=getWarmupState(code),root=document.getElementById("warmupRoot");root.innerHTML=`<div class="warmup-box"><div class="row between wrap"><div><div class="eyebrow">Vor dem Training</div><h3 style="margin-top:4px">Aufwärmen · ca. 6–10 Min</h3></div><span class="pill orange">nicht ermüden</span></div><div class="notice">Aufwärmsätze zählen nicht als Arbeitssätze. Bei Schmerz statt normalem Aufwärmgefühl Übung stoppen/ändern.</div>${w.warmup.map((x,i)=>`<label class="warmup-item"><input class="warmup-check" type="checkbox" data-i="${i}" ${state[i]?"checked":""}><span>${x}</span></label>`).join("")}</div>`;root.querySelectorAll(".warmup-check").forEach(cb=>cb.onchange=()=>{const s=getWarmupState(code);s[Number(cb.dataset.i)]=cb.checked;setWarmupState(code,s)})}
+async function loadTodayRows(code){const {data,error}=await sb.from("training_entries").select("exercise_index,set_number,weight,reps,completed,updated_at").eq("session_date",dateKey()).eq("workout_code",code);if(error)throw error;const map={};(data||[]).forEach(r=>map[`${r.exercise_index}:${r.set_number}`]=r);return map}
+async function loadPreviousRows(code){const {data,error}=await sb.from("training_entries").select("session_date,exercise_index,set_number,weight,reps").eq("workout_code",code).eq("completed",true).lt("session_date",dateKey()).order("session_date",{ascending:false}).limit(100);if(error)throw error;if(!data?.length)return{};const latest=data[0].session_date,map={};data.filter(r=>r.session_date===latest).forEach(r=>map[`${r.exercise_index}:${r.set_number}`]={...r,source:fmtDate(latest)});return map}
+function seedPrevious(code,ei,si){const seed=WORKOUTS[code].exercises[ei].sets[si];return{weight:seed[0],reps:seed[1],source:"Ausgangswert"}}
+function parseReps(v){const m=String(v||"").match(/(\d+(?:[.,]\d+)?)/);return m?Number(m[1].replace(",",".")):null}
+function parseLoad(v){const s=String(v||"").toLowerCase().replace(/\s/g,"").replace(/,/g,".");if(!s)return null;if(s.includes("körpergewicht"))return{type:"bw",value:null,label:String(v)};let m=s.match(/(\d+(?:\.\d+)?)p/);if(m){const x=s.match(/\+?(\d+(?:\.\d+)?)kg/);return{type:"p",value:Number(m[1]),extra:x?Number(x[1]):0,label:String(v)}}m=s.match(/(\d+(?:\.\d+)?)kg/);if(m)return{type:"kg",value:Number(m[1]),extra:0,label:String(v)};return null}
+function compare(prevW,prevR,newW,newR){if(!newW&&!newR)return{cls:"",text:"offen"};const a=parseLoad(prevW),b=parseLoad(newW),pr=parseReps(prevR),nr=parseReps(newR);if(a&&b&&a.type===b.type&&a.value!=null&&b.value!=null){const load=b.value!==a.value?Math.sign(b.value-a.value):Math.sign((b.extra||0)-(a.extra||0));if(load>0)return{cls:"up",text:"mehr Gewicht"};if(load<0)return{cls:"down",text:"weniger Gewicht"};if(pr!=null&&nr!=null){if(nr>pr)return{cls:"up",text:"mehr Wdh."};if(nr<pr)return{cls:"down",text:"weniger Wdh."};return{cls:"",text:"gleich"}}}if(pr!=null&&nr!=null){if(nr>pr)return{cls:"up",text:"mehr Wdh."};if(nr<pr)return{cls:"down",text:"weniger Wdh."};return{cls:"",text:"gleich"}}return{cls:"",text:"gespeichert"}}
+async function renderTraining(){if(!user)return;const token=++renderToken,code=selectedWorkout,w=WORKOUTS[code];renderWorkoutTabs();document.getElementById("workoutCode").textContent=code;document.getElementById("workoutTitle").textContent=w.name;document.getElementById("workoutDay").textContent=w.day;document.getElementById("workoutExtra").innerHTML=w.extra?`<span class="pill green" style="margin-bottom:10px">${w.extra}</span>`:"";renderWarmup(code);syncStatus("Synchronisiere…");let today={},previous={};try{[today,previous]=await Promise.all([loadTodayRows(code),loadPreviousRows(code)]);syncStatus("Cloud aktuell","ok")}catch(e){syncStatus("Cloud nicht erreichbar – lokaler Puffer aktiv","err")}if(token!==renderToken)return;const cache=readCache(code);document.getElementById("exerciseList").innerHTML=w.exercises.map((ex,ei)=>`<div class="exercise"><div class="exercise-title">${ei+1}. ${ex.name}</div><div class="cue">${ex.cue}</div>${ex.sets.map((_,si)=>{const key=`${ei}:${si+1}`,prev=previous[key]||seedPrevious(code,ei,si),cloud=today[key],local=cache[key],current=(local?.pending?local:(cloud||local||null)),valueW=current?.weight??prev.weight??"",valueR=current?.reps??prev.reps??"",cmp=compare(prev.weight,prev.reps,valueW,valueR);return`<div class="set" data-e="${ei}" data-s="${si+1}"><div class="set-head"><span class="set-name">Satz ${si+1}</span><span class="compare ${cmp.cls}">${cmp.text}</span></div><div class="last">Letztes Training (${prev.source}): <b>${prev.weight||"–"} × ${prev.reps||"–"}</b></div><div class="inputs"><div><label>Gewicht / Stack</label><input class="weight" type="text" value="${escapeAttr(valueW)}"></div><div><label>Wiederholungen</label><input class="reps" type="text" value="${escapeAttr(valueR)}"></div></div></div>`}).join("")}</div>`).join("");document.querySelectorAll(".set").forEach(el=>{const ei=Number(el.dataset.e),sn=Number(el.dataset.s),prev=previous[`${ei}:${sn}`]||seedPrevious(code,ei,sn-1);const save=()=>{const weight=el.querySelector(".weight").value.trim(),reps=el.querySelector(".reps").value.trim(),c=readCache(code);c[`${ei}:${sn}`]={weight,reps,pending:true,updatedAt:new Date().toISOString()};writeCache(code,c);const cmp=compare(prev.weight,prev.reps,weight,reps),badge=el.querySelector(".compare");badge.className="compare "+cmp.cls;badge.textContent=cmp.text;queueCloudSave(code,ei,sn,weight,reps)};el.querySelector(".weight").addEventListener("input",save);el.querySelector(".reps").addEventListener("input",save);el.querySelector(".weight").addEventListener("blur",()=>flushCloudSave(code,ei,sn,el));el.querySelector(".reps").addEventListener("blur",()=>flushCloudSave(code,ei,sn,el))});document.getElementById("finishWorkoutBtn").onclick=finishWorkout}
+function queueCloudSave(code,ei,sn,weight,reps){const key=`${code}:${ei}:${sn}`;clearTimeout(saveTimers.get(key));syncStatus("Lokal gespeichert • Cloud folgt…");saveTimers.set(key,setTimeout(()=>cloudSaveSet(code,ei,sn,weight,reps),350))}
+async function flushCloudSave(code,ei,sn,el){const key=`${code}:${ei}:${sn}`;clearTimeout(saveTimers.get(key));await cloudSaveSet(code,ei,sn,el.querySelector(".weight").value.trim(),el.querySelector(".reps").value.trim())}
+async function cloudSaveSet(code,ei,sn,weight,reps){if(!user)return;const row={user_id:user.id,session_date:dateKey(),workout_code:code,exercise_index:ei,exercise_name:WORKOUTS[code].exercises[ei].name,set_number:sn,weight,reps,completed:false,updated_at:new Date().toISOString()};const{error}=await sb.from("training_entries").upsert(row,{onConflict:"user_id,session_date,workout_code,exercise_index,set_number"});const c=readCache(code),key=`${ei}:${sn}`;if(error){if(c[key])c[key].pending=true;writeCache(code,c);syncStatus("Lokal gespeichert • Cloud-Fehler","err");return}if(c[key]){c[key].pending=false;c[key].updatedAt=new Date().toISOString()}writeCache(code,c);syncStatus("Cloud gespeichert","ok")}
+async function retryPendingCache(){if(!user)return;for(const code of Object.keys(WORKOUTS)){const c=readCache(code);for(const[key,v]of Object.entries(c)){if(!v?.pending)continue;const[ei,sn]=key.split(":").map(Number);await cloudSaveSet(code,ei,sn,v.weight||"",v.reps||"")}}}
+async function finishWorkout(){const code=selectedWorkout;syncStatus("Training wird abgeschlossen…");const setEls=[...document.querySelectorAll(".set")];for(const el of setEls)await cloudSaveSet(code,Number(el.dataset.e),Number(el.dataset.s),el.querySelector(".weight").value.trim(),el.querySelector(".reps").value.trim());const{error}=await sb.from("training_entries").update({completed:true,updated_at:new Date().toISOString()}).eq("session_date",dateKey()).eq("workout_code",code);if(error){syncStatus("Abschluss fehlgeschlagen","err");alert("Das Training konnte nicht vollständig abgeschlossen werden: "+error.message);return}syncStatus("Training abgeschlossen","ok");alert("Training gespeichert. Die Daten fließen jetzt auch in deine Fortschrittsdiagramme ein.");await renderTraining();if(document.getElementById("progress").classList.contains("active"))await renderProgress()}
+
+async function loadBodyWeight(day){const local=readBodyCache(day);try{const{data,error}=await sb.from("training_entries").select("weight,updated_at").eq("session_date",day).eq("workout_code",BODY_CODE).eq("exercise_index",0).eq("set_number",1).maybeSingle();if(error)throw error;if(data?.weight!=null){const kg=parseDecimal(data.weight);if(kg!=null){writeBodyCache(day,{kg,pending:false,updatedAt:data.updated_at||new Date().toISOString()});return kg}}return local?.kg??null}catch(e){return local?.kg??null}}
+async function saveBodyWeight(day,kg,statusEl){if(!user||kg==null||kg<30||kg>250){if(statusEl){statusEl.textContent="Bitte ein plausibles Gewicht zwischen 30 und 250 kg eingeben.";statusEl.className="statusline err"}return false}writeBodyCache(day,{kg,pending:true,updatedAt:new Date().toISOString()});if(statusEl){statusEl.textContent="Lokal gespeichert · Cloud folgt…";statusEl.className="statusline"}syncStatus("Gewicht lokal gespeichert • Cloud folgt…");const row={user_id:user.id,session_date:day,workout_code:BODY_CODE,exercise_index:0,exercise_name:"Morgengewicht",set_number:1,weight:String(kg),reps:"",completed:true,updated_at:new Date().toISOString()};const{error}=await sb.from("training_entries").upsert(row,{onConflict:"user_id,session_date,workout_code,exercise_index,set_number"});if(error){if(statusEl){statusEl.textContent="Lokal gespeichert. Cloud-Sync wird später erneut versucht.";statusEl.className="statusline err"}syncStatus("Gewicht lokal gespeichert • Cloud-Fehler","err");return false}writeBodyCache(day,{kg,pending:false,updatedAt:new Date().toISOString()});if(statusEl){statusEl.textContent="Gespeichert und mit der Cloud synchronisiert.";statusEl.className="statusline ok"}syncStatus("Cloud gespeichert","ok");return true}
+async function retryPendingBodyWeights(){if(!user)return;const prefix=`fitplan_bodyweight_${user.id}_`;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!k?.startsWith(prefix))continue;try{const v=JSON.parse(localStorage.getItem(k)||"null");if(!v?.pending)continue;const day=k.slice(prefix.length);await saveBodyWeight(day,Number(v.kg),null)}catch{}}}
+async function hydrateBodyInputs(day){const kg=await loadBodyWeight(day);const val=kg!=null?String(kg):"";if(document.getElementById("homeWeightDate").value===day)document.getElementById("homeWeightInput").value=val;if(document.getElementById("bodyWeightDate").value===day)document.getElementById("bodyWeightInput").value=val}
+async function handleWeightSave(source){const isHome=source==="home",input=document.getElementById(isHome?"homeWeightInput":"bodyWeightInput"),dateEl=document.getElementById(isHome?"homeWeightDate":"bodyWeightDate"),statusEl=document.getElementById(isHome?"homeWeightStatus":"bodyWeightStatus"),kg=parseDecimal(input.value),day=dateEl.value||dateKey();const ok=await saveBodyWeight(day,kg,statusEl);if(ok){document.getElementById("homeWeightDate").value=day;document.getElementById("bodyWeightDate").value=day;document.getElementById("homeWeightInput").value=kg;document.getElementById("bodyWeightInput").value=kg;await renderBodyweight()}}
+document.getElementById("saveHomeWeightBtn").onclick=()=>handleWeightSave("home");document.getElementById("saveBodyWeightBtn").onclick=()=>handleWeightSave("body");
+document.getElementById("homeWeightDate").addEventListener("change",e=>hydrateBodyInputs(e.target.value||dateKey()));document.getElementById("bodyWeightDate").addEventListener("change",e=>hydrateBodyInputs(e.target.value||dateKey()));
+async function fetchBodyWeights(){const{data,error}=await sb.from("training_entries").select("session_date,weight,updated_at").eq("workout_code",BODY_CODE).eq("exercise_index",0).eq("set_number",1).order("session_date",{ascending:true}).limit(1000);if(error)throw error;return(data||[]).map(r=>({day:r.session_date,kg:parseDecimal(r.weight)})).filter(x=>x.kg!=null)}
+function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null}
+function calcChangeClosest(rows,targetDay){if(!rows.length)return null;const target=new Date(targetDay+"T12:00:00").getTime();let best=rows[0],dist=Infinity;for(const r of rows){const d=Math.abs(new Date(r.day+"T12:00:00").getTime()-target);if(d<dist){dist=d;best=r}}return best}
+async function renderBodyweight(){if(!user)return;let rows=[];try{rows=await fetchBodyWeights();syncStatus("Cloud aktuell","ok")}catch(e){syncStatus("Gewichtsverlauf konnte nicht geladen werden","err")}const latest=rows.at(-1);const last7=rows.slice(-7);document.getElementById("latestWeightBig").innerHTML=latest?`${fmt1(latest.kg)} <span>kg</span>`:'– <span>kg</span>';document.getElementById("latestWeightDate").textContent=latest?fmtDate(latest.day):"Noch kein Eintrag";document.getElementById("avg7Big").textContent=last7.length?fmt1(avg(last7.map(x=>x.kg))):"–";document.getElementById("weightStatCurrent").textContent=latest?`${fmt1(latest.kg)} kg`:"–";document.getElementById("weightStatAvg7").textContent=last7.length?`${fmt1(avg(last7.map(x=>x.kg)))} kg`:"–";if(latest){const d30=new Date(latest.day+"T12:00:00");d30.setDate(d30.getDate()-30);const old30=calcChangeClosest(rows,dateKey(d30));document.getElementById("weightStat30").textContent=old30?`${latest.kg-old30.kg>=0?"+":""}${fmt1(latest.kg-old30.kg)} kg`:"–";const first=rows[0];document.getElementById("weightStatAll").textContent=first?`${latest.kg-first.kg>=0?"+":""}${fmt1(latest.kg-first.kg)} kg`:"–"}else{document.getElementById("weightStat30").textContent="–";document.getElementById("weightStatAll").textContent="–"}renderBodyWeightChart(rows);document.getElementById("bodyWeightHistory").innerHTML=rows.length?rows.slice(-12).reverse().map(r=>`<div class="history-item row between"><div><b>${fmt1(r.kg)} kg</b><div class="tiny muted">${fmtDate(r.day)}</div></div><span class="pill">morgens</span></div>`).join(""):'<div class="empty">Noch keine Gewichtseinträge vorhanden.</div>'}
+function renderBodyWeightChart(rows){let filtered=rows;if(weightRangeDays>0&&rows.length){const end=new Date(rows.at(-1).day+"T12:00:00");const start=new Date(end);start.setDate(start.getDate()-(weightRangeDays-1));filtered=rows.filter(r=>new Date(r.day+"T12:00:00")>=start)}const empty=document.getElementById("bodyWeightChartEmpty");if(bodyWeightChart){bodyWeightChart.destroy();bodyWeightChart=null}if(filtered.length<2){empty.classList.add("show");return}empty.classList.remove("show");const ctx=document.getElementById("bodyWeightChart");bodyWeightChart=new Chart(ctx,{type:"line",data:{labels:filtered.map(r=>fmtShortDate(r.day)),datasets:[{label:"Körpergewicht",data:filtered.map(r=>r.kg),borderColor:"#73e0a1",backgroundColor:"rgba(115,224,161,.12)",fill:true,tension:.25,pointRadius:3,pointHoverRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${fmt1(c.parsed.y)} kg`}}},scales:{x:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#96969e",maxTicksLimit:8}},y:{grid:{color:"rgba(255,255,255,.06)"},ticks:{color:"#96969e",callback:v=>`${String(v).replace(".",",")} kg`}}}}})}
+document.querySelectorAll("#weightRangeTabs button").forEach(b=>b.onclick=async()=>{weightRangeDays=Number(b.dataset.days);document.querySelectorAll("#weightRangeTabs button").forEach(x=>x.classList.toggle("active",x===b));await renderBodyweight()});
+
+function initProgressSelectors(){const wSel=document.getElementById("progressWorkoutSelect");wSel.innerHTML=Object.entries(WORKOUTS).map(([code,w])=>`<option value="${code}">${code} · ${w.name}</option>`).join("");wSel.value=progressWorkout;fillProgressExerciseSelect();wSel.onchange=async()=>{progressWorkout=wSel.value;progressExercise=0;fillProgressExerciseSelect();await renderProgress()};document.getElementById("progressExerciseSelect").onchange=async e=>{progressExercise=Number(e.target.value);await renderProgress()}}
+function fillProgressExerciseSelect(){const eSel=document.getElementById("progressExerciseSelect"),ex=WORKOUTS[progressWorkout].exercises;eSel.innerHTML=ex.map((x,i)=>`<option value="${i}">${i+1}. ${escapeHtml(x.name)}</option>`).join("");eSel.value=String(progressExercise)}
+async function fetchExerciseRows(code,ei){const{data,error}=await sb.from("training_entries").select("session_date,set_number,weight,reps,completed,updated_at").eq("workout_code",code).eq("exercise_index",ei).order("session_date",{ascending:true}).order("set_number",{ascending:true}).limit(1000);if(error)throw error;return data||[]}
+function groupByDate(rows){const map={};for(const r of rows){if(!map[r.session_date])map[r.session_date]=[];map[r.session_date].push(r)}return map}
+function inferLoadType(rows){for(const r of rows){const p=parseLoad(r.weight);if(p?.type==="kg")return"kg";if(p?.type==="p")return"p"}return"none"}
+function buildSetDatasets(rows,kind,loadType){const grouped=groupByDate(rows),dates=Object.keys(grouped).sort(),maxSet=Math.max(0,...rows.map(r=>Number(r.set_number)||0)),palette=["#73e0a1","#77aef2","#f1a267","#b494f4"];const datasets=[];for(let s=1;s<=maxSet;s++){const rawWeights=[];const data=dates.map(d=>{const r=grouped[d].find(x=>Number(x.set_number)===s);if(!r){rawWeights.push("");return null}rawWeights.push(r.weight||"");if(kind==="reps")return parseReps(r.reps);const p=parseLoad(r.weight);if(!p||p.type!==loadType||p.value==null)return null;return p.value});datasets.push({label:`Satz ${s}`,data,rawWeights,borderColor:palette[(s-1)%palette.length],backgroundColor:palette[(s-1)%palette.length],tension:.2,pointRadius:3,spanGaps:true})}return{dates,datasets}}
+async function renderProgress(){if(!user)return;if(!document.getElementById("progressWorkoutSelect").options.length)initProgressSelectors();document.getElementById("progressWorkoutSelect").value=progressWorkout;fillProgressExerciseSelect();let rows=[];try{rows=await fetchExerciseRows(progressWorkout,progressExercise)}catch(e){syncStatus("Fortschritt konnte nicht geladen werden","err")}const grouped=groupByDate(rows),dates=Object.keys(grouped).sort(),lastDay=dates.at(-1),lastRows=lastDay?grouped[lastDay]:[],last=lastRows[0];document.getElementById("progressSessions").textContent=String(dates.length);document.getElementById("progressLastLoad").textContent=last?.weight||"–";document.getElementById("progressLastReps").textContent=last?.reps||"–";let trend="–";if(dates.length>=2){const firstDay=dates[0],first=grouped[firstDay][0],a=parseLoad(first?.weight),b=parseLoad(last?.weight),ar=parseReps(first?.reps),br=parseReps(last?.reps);if(a&&b&&a.type===b.type&&a.value!=null&&b.value!=null){const delta=b.value-a.value;trend=delta>0?"↑ Last":delta<0?"↓ Last":((br??0)>(ar??0)?"↑ Wdh.":"→ stabil")}else if(ar!=null&&br!=null)trend=br>ar?"↑ Wdh.":br<ar?"↓ Wdh.":"→ stabil"}document.getElementById("progressTrend").textContent=trend;renderExerciseCharts(rows);renderExerciseHistory(grouped);await renderHistory()}
+function renderExerciseCharts(rows){if(loadChart){loadChart.destroy();loadChart=null}if(repsChart){repsChart.destroy();repsChart=null}const loadType=inferLoadType(rows),loadEmpty=document.getElementById("loadChartEmpty"),repsEmpty=document.getElementById("repsChartEmpty");if(loadType==="none"){loadEmpty.classList.add("show");document.getElementById("loadChartUnit").textContent="keine numerische Last"}else{loadEmpty.classList.remove("show");document.getElementById("loadChartUnit").textContent=loadType==="kg"?"kg":"Stack-Stufe (P)";const x=buildSetDatasets(rows,"load",loadType);loadChart=new Chart(document.getElementById("loadChart"),{type:"line",data:{labels:x.dates.map(fmtShortDate),datasets:x.datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#b9b9c0"}},tooltip:{callbacks:{label:c=>{const raw=c.dataset.rawWeights?.[c.dataIndex]||"";return`${c.dataset.label}: ${raw||c.parsed.y}`}}}},scales:{x:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#96969e",maxTicksLimit:8}},y:{grid:{color:"rgba(255,255,255,.06)"},ticks:{color:"#96969e"},title:{display:true,text:loadType==="kg"?"kg":"Stack-Stufe (P)",color:"#96969e"}}}}})}const r=buildSetDatasets(rows,"reps",loadType);const hasReps=r.datasets.some(ds=>ds.data.some(v=>v!=null));if(!hasReps){repsEmpty.classList.add("show")}else{repsEmpty.classList.remove("show");repsChart=new Chart(document.getElementById("repsChart"),{type:"line",data:{labels:r.dates.map(fmtShortDate),datasets:r.datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:"#b9b9c0"}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y} Wdh.`}}},scales:{x:{grid:{color:"rgba(255,255,255,.04)"},ticks:{color:"#96969e",maxTicksLimit:8}},y:{beginAtZero:false,grid:{color:"rgba(255,255,255,.06)"},ticks:{color:"#96969e",precision:0},title:{display:true,text:"Wiederholungen",color:"#96969e"}}}}})}}
+function renderExerciseHistory(grouped){const root=document.getElementById("exerciseHistoryList"),dates=Object.keys(grouped).sort().reverse();if(!dates.length){root.innerHTML='<div class="empty">Für diese Übung gibt es noch keine gespeicherten Trainingseinträge.</div>';return}root.innerHTML=dates.slice(0,20).map(d=>`<div class="progress-row"><div class="progress-date">${fmtDate(d)}</div><div class="progress-sets">${grouped[d].sort((a,b)=>a.set_number-b.set_number).map(r=>`<span class="set-chip">S${r.set_number}: ${escapeHtml(r.weight||"–")} × ${escapeHtml(r.reps||"–")}</span>`).join("")}</div></div>`).join("")}
+async function renderHistory(){if(!user)return;const root=document.getElementById("historyList"),codes=Object.keys(WORKOUTS);const{data,error}=await sb.from("training_entries").select("session_date,workout_code,exercise_index,set_number").eq("completed",true).in("workout_code",codes).order("session_date",{ascending:false}).limit(1000);if(error){root.innerHTML='<div class="empty">Verlauf konnte nicht geladen werden.</div>';return}if(!data?.length){root.innerHTML='<div class="empty">Noch keine abgeschlossene Einheit in der Cloud gespeichert.</div>';return}const sessions={};data.forEach(r=>{const k=`${r.session_date}|${r.workout_code}`;sessions[k]=sessions[k]||{date:r.session_date,code:r.workout_code,count:0};sessions[k].count++});root.innerHTML=Object.values(sessions).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,20).map(s=>`<div class="history-item"><b>${s.code} · ${WORKOUTS[s.code]?.name||s.code}</b><div class="tiny muted">${fmtDate(s.date)} · ${s.count} Sätze</div></div>`).join("")}
+
+document.getElementById("forceSyncBtn").onclick=async()=>{syncStatus("Synchronisiere…");await retryPendingCache();await retryPendingBodyWeights();if(document.getElementById("training").classList.contains("active"))await renderTraining();await renderBodyweight();await renderProgress();syncStatus("Cloud aktuell","ok")};
+document.addEventListener("visibilitychange",async()=>{if(document.visibilityState==="visible"&&user){await retryPendingCache();await retryPendingBodyWeights();await hydrateBodyInputs(dateKey());if(document.getElementById("training").classList.contains("active"))await renderTraining();if(document.getElementById("bodyweight").classList.contains("active"))await renderBodyweight();if(document.getElementById("progress").classList.contains("active"))await renderProgress()}});window.addEventListener("online",async()=>{await retryPendingCache();await retryPendingBodyWeights()});
+boot();
+</script>
+</body>
+</html>
